@@ -43,14 +43,15 @@ admissionForm.addEventListener('submit', async function(e) {
         id: Date.now(),
         registrationNo: formData.get('registrationNo'),
         studentName: formData.get('studentName'),
+        fatherName: formData.get('fatherName'),
+        lastName: formData.get('lastName'),
+        motherName: formData.get('motherName'),
         dob: formData.get('dob'),
         gender: formData.get('gender'),
         birthPlace: formData.get('birthPlace'),
         birthTaluka: formData.get('birthTaluka'),
         birthDistrict: formData.get('birthDistrict'),
         aadharNo: formData.get('aadharNo'),
-        fatherName: formData.get('fatherName'),
-        motherName: formData.get('motherName'),
         religion: formData.get('religion'),
         caste: formData.get('caste'),
         subCaste: formData.get('subCaste'),
@@ -172,6 +173,10 @@ function displayStudents() {
                 <div class="info-item">
                     <span class="label">Father's Name</span>
                     <span class="value">${student.fatherName}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Last Name</span>
+                    <span class="value">${student.lastName || 'N/A'}</span>
                 </div>
                 <div class="info-item">
                     <span class="label">Mother's Name</span>
@@ -379,66 +384,155 @@ function generateCertificate(id) {
     const currentYear = new Date().getFullYear();
     
     const certificate = `
-        <div class="certificate">
+        <div class="certificate" style="padding: 20px; font-family: 'Noto Sans Devanagari', Arial, sans-serif; max-width: 100%; margin: 0 auto; box-sizing: border-box;">
             <div class="certificate-header">
-                <h1>SCHOOL NAME</h1>
-                <h2>LEAVING CERTIFICATE</h2>
-                <p style="margin-top: 10px; font-style: italic;">School Address, City, State - PIN Code</p>
-            </div>
-            
-            <div class="certificate-body">
-                <p style="text-align: right; font-weight: bold;">Certificate No: LC/${student.registrationNo}/${currentYear}</p>
-                <p style="text-align: right;">Date: ${formatDate(new Date().toISOString().split('T')[0])}</p>
-                
-                <p>This is to certify that <strong>${student.studentName}</strong>, 
-                Son/Daughter of <strong>${student.fatherName}</strong> and <strong>${student.motherName}</strong>, 
-                was a bonafide student of this institution.</p>
-                
-                <p><strong>Registration Number:</strong> ${student.registrationNo}</p>
-                
-                <p><strong>Date of Birth:</strong> ${formatDate(student.dob)} (Age: ${age} years)</p>
-                
-                <p><strong>Birth Place:</strong> ${student.birthPlace}, ${student.birthTaluka}, ${student.birthDistrict}</p>
-                
-                <p><strong>Aadhar Number:</strong> ${student.aadharNo}</p>
-                
-                <p><strong>Religion:</strong> ${student.religion} | <strong>Caste:</strong> ${student.caste} | <strong>Sub Caste:</strong> ${student.subCaste}</p>
-                
-                <p><strong>Date of Admission:</strong> ${formatDate(student.admissionDate)}</p>
-                
-                <p><strong>Class Last Studied:</strong> ${student.class} (Section: ${student.section})</p>
-                
-                <p><strong>Date of Leaving:</strong> ${formatDate(new Date().toISOString().split('T')[0])}</p>
-                
-                ${student.previousSchool ? `<p><strong>Previous School:</strong> ${student.previousSchool}</p>` : ''}
-                
-                <p><strong>Gender:</strong> ${student.gender}</p>
-                
-                <p><strong>Address:</strong> ${student.address}</p>
-                
-                <p><strong>Contact Number:</strong> ${student.phone}</p>
-                
-                ${student.email ? `<p><strong>Email:</strong> ${student.email}</p>` : ''}
-                
-                <p style="margin-top: 20px;">The student has been regular in attendance and their conduct has been satisfactory. 
-                They are leaving the school at the request of their parents/guardians.</p>
-                
-                <p>We wish them all the best for their future endeavors.</p>
-            </div>
-            
-            <div class="certificate-footer">
-                <div class="signature-block">
-                    <div class="signature-line">Class Teacher</div>
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                    <img src="images/logo.png" alt="School Logo" style="max-height: 90px; max-width: 90px;">
+                    <div style="text-align: center; flex: 1; margin: 0 15px;">
+                        <p style="color: #8B0000; font-size: 13px; margin: 2px 0; font-weight: 600;">
+                            महात्मा गांधी विद्यामंदिर शिक्षण संस्था,
+                        </p>
+                        <h1 style="color: #8B0000; font-size: 20px; margin: 3px 0; font-weight: 700;">
+                            मराठी अध्यापक विद्यालय संलग्नित सरावपाठ शाळा
+                        </h1>
+                        <p style="color: #8B0000; font-size: 12px; margin: 2px 0;">
+                            भायगांव रोड, मालेगांव कॅम्प, ता. मालेगांव जि. नाशिक
+                        </p>
+                        <p style="color: #8B0000; font-size: 10px; margin: 2px 0; text-align: left;">
+                            शाळा मान्यता क्रमांक -
+                        </p>
+                        <p style="color: #8B0000; font-size: 11px; margin: 3px 0; text-align: left; border-bottom: 2px solid #8B0000; padding-bottom: 3px;">
+                            फोन नं.- <span style="margin-left: 150px;">ई-मेल - marathiadhya.sarav@gmail.com</span>
+                        </p>
+                        <div style="text-align: left; font-size: 13px; margin: 2px 0; line-height: 1.4;">
+                            <div style="color: #8B0000;">● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - <span style="margin-left: 140px;">● यु. डायस क्र.-</span></div>
+                            <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.-</span></div>
+                        </div>
+                    </div>
+                    <img src="images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
                 </div>
-                <div class="signature-block">
-                    <div class="signature-line">Principal</div>
+                
+                <div style="text-align: center; margin: 15px 0; position: relative;">
+                    <div style="border-top: 3px solid #000; position: absolute; width: 100%; top: 50%; z-index: 1;"></div>
+                    <h2 style="background: white; display: inline-block; padding: 8px 30px; position: relative; z-index: 2; color: white; background-color: #8B0000; font-size: 26px; margin: 0; border-radius: 25px; font-weight: 700;">शाळा सोडल्याचा दाखला</h2>
                 </div>
             </div>
+            
+            <div class="certificate-body" style="font-size: 13px; line-height: 1.8;">
+                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">स्टुडंट आय. डी. - <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
+                
+                <p style="margin: 8px 0;">१) विद्यार्थीचे संपूर्ण नाव - <strong>${student.studentName}</strong> (वडीलांचे नाव) <strong>${student.fatherName}</strong> (आडनाव) <strong>${student.lastName || ''}</strong></p>
+                
+                <p style="margin: 8px 0;">२) आईचे नाव - <strong>${student.motherName}</strong></p>
+                
+                <p style="margin: 8px 0;">३) राष्ट्रीयत्व : भारतीय <span style="margin-left: 120px;">४) मातृभाषा : मराठी</span></p>
+                
+                <p style="margin: 8px 0;">५) धर्म : <strong>${student.religion}</strong> <span style="margin-left: 40px;">६) जात : <strong>${student.caste}</strong></span> <span style="margin-left: 40px;">७) पोटजात : <strong>${student.subCaste}</strong></span></p>
+                
+                <p style="margin: 8px 0;">८) जन्मस्थळ (गाव / शहर) : <strong>${student.birthPlace}</strong> <span style="margin-left: 40px;">तालुका : <strong>${student.birthTaluka}</strong></span> <span style="margin-left: 40px;">जिल्हा : <strong>${student.birthDistrict}</strong></span></p>
+                
+                <p style="margin: 8px 0;">९) राज्य : महाराष्ट्र <span style="margin-left: 120px;">१०) देश : भारत</span></p>
+                
+                <p style="margin: 8px 0;">११) जन्म दिनांक अक्षरी - <strong>${formatDateInWords(student.dob)}</strong></p>
+                
+                <p style="margin: 8px 0;">१२) जन्म दिनांक अंकी - <strong>${formatDate(student.dob)}</strong></p>
+                
+                <p style="margin: 8px 0;">१३) या पूर्वी शिकून आलेल्या शाळेचे नाव - <strong>${student.previousSchool || 'लागू नाही'}</strong></p>
+                
+                <p style="margin:8px 0;">१४) या शाळेत प्रवेश घेतल्याचा दिनांक - <strong>${formatDate(student.admissionDate)}</strong> <span style="margin-left: 60px;">१५) इयता - <strong>${student.class}</strong></span></p>
+                
+                <p style="margin: 8px 0;">१६) उपस्थितांतील प्रगती - <strong>समाधानकारक</strong> <span style="margin-left: 60px;">१७) वर्गक्रम - <strong>नियमित</strong></span></p>
+                
+                <p style="margin: 8px 0;">१८) शाळा सोडल्याचा दिनांक - <strong>${formatDate(new Date().toISOString().split('T')[0])}</strong></p>
+                
+                <p style="margin: 8px 0;">१९) कोणत्या इयतत शिकत होता व केव्हापासून  - <strong>${student.class}</strong></p>
+                
+                <p style="margin: 8px 0;">२०) शाळा सोडल्याचे कारण - <strong>पालकांच्या विनंतीनुसार</strong></p>
+                
+                <p style="margin: 8px 0;">२१) शेरा - <strong></strong></p>
+                
+                <p style="margin: 20px 0 10px 0; font-size: 12px;">दाखला देण्यात येतो की, वरील माहिती शाळेतील जनरल रजिष्टर नं. १ प्रमाणे आहे.</p>
+                
+                <p style="margin: 5px 0; font-size: 11px;">तारीख -</p>
+            </div>
+            
+            <div class="certificate-footer" style="display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #000; padding-top: 20px;">
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 50px;"></div>
+                    <div style="font-weight: bold;">लिपीक</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 50px;"></div>
+                    <div style="font-weight: bold;">मुख्याध्यापक</div>
+                </div>
+            </div>
+            <p style="font-size: 10px; margin-top: 10px; text-align: center;">टिप :- १) शाळा सोडल्याचे दाखल्यामध्ये अनाधिकृतरित्या बदल केल्यास संबंधितांवर कायदेशिर कारवाई करण्यात येईल.</p>
         </div>
     `;
     
     certificateContent.innerHTML = certificate;
     certificateModal.style.display = 'block';
+}
+
+// Format date in words (Marathi)
+function formatDateInWords(dateStr) {
+    const days = ['', 'एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ', 'दहा',
+                  'अकरा', 'बारा', 'तेरा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'एकोणीस', 'वीस',
+                  'एकवीस', 'बावीस', 'तेवीस', 'चोवीस', 'पंचवीस', 'सव्वीस', 'सत्तावीस', 'अठ्ठावीस', 'एकोणतीस', 'तीस', 'एकतीस'];
+    
+    const ones = ['', 'एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ'];
+    const teens = ['दहा', 'अकरा', 'बारा', 'तेरा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'एकोणीस'];
+    const twenties = ['वीस', 'एकवीस', 'बावीस', 'तेवीस', 'चोवीस', 'पंचवीस', 'सव्वीस', 'सत्तावीस', 'अठ्ठावीस', 'एकोणतीस'];
+    const thirties = ['तीस', 'एकतीस', 'बत्तीस', 'तेहतीस', 'चौतीस', 'पस्तीस', 'छत्तीस', 'सदतीस', 'अडतीस', 'एकोणचाळीस'];
+    const fourties = ['चाळीस', 'एकेचाळीस', 'बेचाळीस', 'त्रेचाळीस', 'चव्वेचाळीस', 'पंचेचाळीस', 'सेहेचाळीस', 'सत्तेचाळीस', 'अठ्ठेचाळीस', 'एकोणपन्नास'];
+    const fifties = ['पन्नास', 'एक्कावन्न', 'बावन्न', 'त्रेपन्न', 'चोपन्न', 'पंचावन्न', 'छपन्न', 'सत्तावन्न', 'अठ्ठावन्न', 'एकोणसाठ'];
+    const sixties = ['साठ', 'एकसष्ठ', 'बासष्ठ', 'त्रेसष्ठ', 'चौसष्ठ', 'पासष्ठ', 'सहासष्ठ', 'सदुसष्ठ', 'अडुसष्ठ', 'एकोणसत्तर'];
+    const seventies = ['सत्तर', 'एकाहत्तर', 'बाहत्तर', 'त्र्याहत्तर', 'चौऱ्याहत्तर', 'पंच्याहत्तर', 'शहात्तर', 'सत्याहत्तर', 'अठ्ठ्याहत्तर', 'एकोणऐंशी'];
+    const eighties = ['ऐंशी', 'एक्याऐंशी', 'ब्याऐंशी', 'त्र्याऐंशी', 'चौऱ्याऐंशी', 'पंच्याऐंशी', 'शहाऐंशी', 'सत्याऐंशी', 'अठ्ठ्याऐंशी', 'एकोणनव्वद'];
+    const nineties = ['नव्वद', 'एक्याण्णव', 'ब्याण्णव', 'त्र्याण्णव', 'चौऱ्याण्णव', 'पंच्याण्णव', 'शहाण्णव', 'सत्याण्णव', 'अठ्ठ्याण्णव', 'नव्व्याण्णव'];
+    
+    const months = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
+    
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    // Get day in words (1-31)
+    const dayInWords = days[day];
+    
+    // Convert year to words
+    function numberToWords(num) {
+        if (num === 0) return '';
+        if (num < 10) return ones[num];
+        if (num >= 10 && num < 20) return teens[num - 10];
+        if (num >= 20 && num < 30) return twenties[num - 20];
+        if (num >= 30 && num < 40) return thirties[num - 30];
+        if (num >= 40 && num < 50) return fourties[num - 40];
+        if (num >= 50 && num < 60) return fifties[num - 50];
+        if (num >= 60 && num < 70) return sixties[num - 60];
+        if (num >= 70 && num < 80) return seventies[num - 70];
+        if (num >= 80 && num < 90) return eighties[num - 80];
+        if (num >= 90 && num < 100) return nineties[num - 90];
+        return '';
+    }
+    
+    let yearInWords = '';
+    const thousands = Math.floor(year / 1000);
+    const hundreds = Math.floor((year % 1000) / 100);
+    const remainder = year % 100;
+    
+    if (thousands > 0) {
+        yearInWords = numberToWords(thousands) + ' हजार';
+    }
+    if (hundreds > 0) {
+        yearInWords += (yearInWords ? ' ' : '') + numberToWords(hundreds) + ' शे';
+    }
+    if (remainder > 0) {
+        yearInWords += (yearInWords ? ' ' : '') + numberToWords(remainder);
+    }
+    
+    return `${dayInWords} ${month} ${yearInWords}`;
 }
 
 // Calculate age from date of birth
@@ -499,14 +593,15 @@ function editStudent(id) {
     document.getElementById('editStudentId').value = student.id;
     document.getElementById('editRegistrationNo').value = student.registrationNo;
     document.getElementById('editStudentName').value = student.studentName;
+    document.getElementById('editFatherName').value = student.fatherName;
+    document.getElementById('editLastName').value = student.lastName || '';
+    document.getElementById('editMotherName').value = student.motherName;
     document.getElementById('editDob').value = student.dob;
     document.getElementById('editGender').value = student.gender;
     document.getElementById('editBirthPlace').value = student.birthPlace;
     document.getElementById('editBirthTaluka').value = student.birthTaluka;
     document.getElementById('editBirthDistrict').value = student.birthDistrict;
     document.getElementById('editAadharNo').value = student.aadharNo;
-    document.getElementById('editFatherName').value = student.fatherName;
-    document.getElementById('editMotherName').value = student.motherName;
     document.getElementById('editReligion').value = student.religion;
     document.getElementById('editCaste').value = student.caste;
     document.getElementById('editSubCaste').value = student.subCaste;
@@ -553,14 +648,15 @@ editForm.addEventListener('submit', async function(e) {
         id: studentData.id,
         registrationNo: formData.get('registrationNo'),
         studentName: formData.get('studentName'),
+        fatherName: formData.get('fatherName'),
+        lastName: formData.get('lastName'),
+        motherName: formData.get('motherName'),
         dob: formData.get('dob'),
         gender: formData.get('gender'),
         birthPlace: formData.get('birthPlace'),
         birthTaluka: formData.get('birthTaluka'),
         birthDistrict: formData.get('birthDistrict'),
         aadharNo: formData.get('aadharNo'),
-        fatherName: formData.get('fatherName'),
-        motherName: formData.get('motherName'),
         religion: formData.get('religion'),
         caste: formData.get('caste'),
         subCaste: formData.get('subCaste'),
