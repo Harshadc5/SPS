@@ -1,9 +1,15 @@
 // Import Firebase modules
-import { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, ADMIN_EMAILS } from './firebase-config.js';
+import { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS } from './firebase-config.js';
 
 // Authentication state
 let currentUser = null;
 let isAdmin = false;
+
+// Detect if user is on mobile device
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           (window.innerWidth <= 768);
+}
 
 // Initialize students array
 let students = [];
@@ -828,48 +834,61 @@ async function signInWithGoogle() {
         authStatus.className = '';
         authStatus.textContent = 'Signing in...';
         
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
+        // Store intended tab in sessionStorage for redirect flow
+        if (intendedTab) {
+            sessionStorage.setItem('intendedTab', intendedTab);
+        }
         
-        // Check if user email is in admin whitelist
-        if (ADMIN_EMAILS.includes(user.email)) {
-            authStatus.className = 'success';
-            authStatus.textContent = '✅ Authentication successful!';
-            
-            setTimeout(() => {
-                closeAuthModal();
-                if (intendedTab) {
-                    // Now that user is authenticated, directly navigate
-                    const tabName = intendedTab;
-                    intendedTab = null;
-                    
-                    // Hide all tabs
-                    document.querySelectorAll('.tab-content').forEach(tab => {
-                        tab.classList.remove('active');
-                    });
-                    
-                    // Show the intended tab
-                    if (tabName === 'admission') {
-                        const admissionTab = document.getElementById('admission-tab');
-                        if (admissionTab) admissionTab.classList.add('active');
-                    } else if (tabName === 'students') {
-                        const studentsTab = document.getElementById('students-tab');
-                        if (studentsTab) studentsTab.classList.add('active');
-                        displayStudents();
-                    }
-                }
-            }, 1000);
+        // Use redirect for mobile devices, popup for desktop
+        if (isMobileDevice()) {
+            // Mobile: use redirect (will reload page)
+            await signInWithRedirect(auth, googleProvider);
+            // Note: Code after this won't execute as page will redirect
         } else {
-            // User is not authorized
-            authStatus.className = 'error';
-            authStatus.textContent = '❌ Access denied. Your email is not authorized to access this system.';
+            // Desktop: use popup (stays on same page)
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
             
-            // Sign out the user
-            await signOut(auth);
-            
-            setTimeout(() => {
-                authStatus.style.display = 'none';
-            }, 4000);
+            // Check if user email is in admin whitelist
+            if (ADMIN_EMAILS.includes(user.email)) {
+                authStatus.className = 'success';
+                authStatus.textContent = '✅ Authentication successful!';
+                
+                setTimeout(() => {
+                    closeAuthModal();
+                    if (intendedTab) {
+                        // Now that user is authenticated, directly navigate
+                        const tabName = intendedTab;
+                        intendedTab = null;
+                        
+                        // Hide all tabs
+                        document.querySelectorAll('.tab-content').forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        
+                        // Show the intended tab
+                        if (tabName === 'admission') {
+                            const admissionTab = document.getElementById('admission-tab');
+                            if (admissionTab) admissionTab.classList.add('active');
+                        } else if (tabName === 'students') {
+                            const studentsTab = document.getElementById('students-tab');
+                            if (studentsTab) studentsTab.classList.add('active');
+                            displayStudents();
+                        }
+                    }
+                }, 1000);
+            } else {
+                // User is not authorized
+                authStatus.className = 'error';
+                authStatus.textContent = '❌ Access denied. Your email is not authorized to access this system.';
+                
+                // Sign out the user
+                await signOut(auth);
+                
+                setTimeout(() => {
+                    authStatus.style.display = 'none';
+                }, 4000);
+            }
         }
     } catch (error) {
         console.error('Authentication error:', error);
@@ -879,6 +898,8 @@ async function signInWithGoogle() {
             authStatus.textContent = '⚠️ Sign-in cancelled. Please try again.';
         } else if (error.code === 'auth/popup-blocked') {
             authStatus.textContent = '⚠️ Popup blocked. Please allow popups for this site.';
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            authStatus.textContent = '⚠️ Only one sign-in popup allowed at a time.';
         } else {
             authStatus.textContent = '❌ Authentication failed. Please try again.';
         }
@@ -904,6 +925,48 @@ async function signOutUser() {
 }
 
 // Listen to authentication state changes
+// Handle redirect result on page load (for mobile authentication)
+getRedirectResult(auth)
+    .then((result) => {
+        if (result && result.user) {
+            const user = result.user;
+            
+            // Check if user is authorized
+            if (ADMIN_EMAILS.includes(user.email)) {
+                // User is authorized, check for intended tab
+                const savedIntendedTab = sessionStorage.getItem('intendedTab');
+                if (savedIntendedTab) {
+                    sessionStorage.removeItem('intendedTab');
+                    
+                    // Navigate to intended tab
+                    setTimeout(() => {
+                        document.querySelectorAll('.tab-content').forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        
+                        if (savedIntendedTab === 'admission') {
+                            const admissionTab = document.getElementById('admission-tab');
+                            if (admissionTab) admissionTab.classList.add('active');
+                        } else if (savedIntendedTab === 'students') {
+                            const studentsTab = document.getElementById('students-tab');
+                            if (studentsTab) studentsTab.classList.add('active');
+                            displayStudents();
+                        }
+                    }, 500);
+                }
+            } else {
+                // User is not authorized
+                alert('❌ Access denied. Your email is not authorized to access this system.');
+                signOut(auth);
+            }
+        }
+    })
+    .catch((error) => {
+        if (error.code !== 'auth/popup-closed-by-user') {
+            console.error('Redirect result error:', error);
+        }
+    });
+
 onAuthStateChanged(auth, (user) => {
     if (user && ADMIN_EMAILS.includes(user.email)) {
         // User is signed in and authorized

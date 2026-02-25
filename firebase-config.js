@@ -23,7 +23,7 @@ const firebaseConfig = {
 // Initialize Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, push, remove, update, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -40,4 +40,4 @@ const ADMIN_EMAILS = [
 ];
 
 // Export database functions and auth
-export { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, ADMIN_EMAILS };
+export { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS };
