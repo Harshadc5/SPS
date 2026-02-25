@@ -738,14 +738,16 @@ h2 {
     background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%);
     font-family: 'Georgia', serif;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    min-width: 750px; /* Maintain desktop width */
 }
 
+/* Keep certificate in desktop view on mobile - make container scrollable instead */
 @media (max-width: 768px) {
-    .certificate {
-        border: 2px solid #FF9A9E;
-        padding: 15px;
-        margin: 10px 0;
-        font-size: 0.85em;
+    #certificateContent {
+        overflow-x: auto;
+        overflow-y: auto;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -756,26 +758,11 @@ h2 {
     padding-bottom: 18px;
 }
 
-@media (max-width: 768px) {
-    .certificate-header {
-        margin-bottom: 15px;
-        border-bottom: 2px solid #FF9A9E;
-        padding-bottom: 10px;
-    }
-}
-
 .certificate-header h1 {
     color: #FF6B6B;
     font-size: 2.3em;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(255, 107, 107, 0.2);
-}
-
-@media (max-width: 768px) {
-    .certificate-header h1 {
-        font-size: 1.5em;
-        margin-bottom: 8px;
-    }
 }
 
 .certificate-header h2 {
@@ -786,23 +773,9 @@ h2 {
     margin-bottom: 8px;
 }
 
-@media (max-width: 768px) {
-    .certificate-header h2 {
-        font-size: 1.1em;
-        margin-bottom: 5px;
-    }
-}
-
 .certificate-header p {
     margin: 8px 0;
     font-size: 1em;
-}
-
-@media (max-width: 768px) {
-    .certificate-header p {
-        margin: 5px 0;
-        font-size: 0.85em;
-    }
 }
 
 .certificate-body {
@@ -811,24 +784,9 @@ h2 {
     margin: 25px 0;
 }
 
-@media (max-width: 768px) {
-    .certificate-body {
-        line-height: 1.6;
-        font-size: 0.9em;
-        margin: 15px 0;
-    }
-}
-
 .certificate-body p {
     margin: 13px 0;
     text-align: justify;
-}
-
-@media (max-width: 768px) {
-    .certificate-body p {
-        margin: 8px 0;
-        text-align: left;
-    }
 }
 
 .certificate-body strong {
@@ -841,13 +799,6 @@ h2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-}
-
-@media (max-width: 768px) {
-    .certificate-footer {
-        margin-top: 30px;
-        gap: 15px;
-    }
 }
 
 .signature-block {
@@ -869,16 +820,6 @@ h2 {
     padding-top: 10px;
     font-size: 1em;
     display: inline-block;
-}
-
-@media (max-width: 768px) {
-    .signature-line {
-        width: 120px;
-        margin-top: 30px;
-        padding-top: 8px;
-        font-size: 0.8em;
-        border-top: 1px solid #333;
-    }
 }
 
 .empty-state {
@@ -1907,26 +1848,17 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
         font-size: 0.85em;
     }
     
-    .certificate {
-        padding: 10px;
-        font-size: 0.75em;
-    }
-    
-    .certificate-header h1 {
-        font-size: 1.3em;
-    }
-    
-    .certificate-header h2 {
-        font-size: 1em;
-    }
-    
-    .certificate-body {
-        font-size: 0.8em;
-    }
-    
     .modal-content {
         padding: 10px;
         width: 98%;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    /* Allow horizontal scrolling for certificate on mobile */
+    .modal-content #certificateContent {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .keyfeature-badge {
