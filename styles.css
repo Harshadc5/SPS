@@ -734,20 +734,35 @@ h2 {
 .certificate {
     border: 4px solid #FF9A9E;
     padding: 30px;
-    margin: 20px 0;
+    margin: 20px auto;
     background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%);
     font-family: 'Georgia', serif;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    min-width: 750px; /* Maintain desktop width */
+    width: 750px; /* Fixed desktop width for A4-like appearance */
+    max-width: 100%;
 }
 
-/* Keep certificate in desktop view on mobile - make container scrollable instead */
+/* Scale certificate to fit mobile screen as complete page */
 @media (max-width: 768px) {
     #certificateContent {
-        overflow-x: auto;
-        overflow-y: auto;
-        max-width: 100%;
-        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+        overflow: visible;
+    }
+    
+    .certificate {
+        width: 750px;
+        transform-origin: top center;
+        transform: scale(0.48); /* Scale to fit mobile width */
+        margin: -150px auto -200px auto; /* Adjust margins after scaling */
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .certificate {
+        width: 750px;
+        transform-origin: top center;
+        transform: scale(0.85); /* Scale for tablets */
+        margin: -50px auto -80px auto;
     }
 }
 
@@ -1213,6 +1228,7 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
         page-break-before: avoid !important;
         font-size: 11pt !important;
         line-height: 1.4 !important;
+        transform: none !important; /* Reset any scaling for print */
         -webkit-font-smoothing: antialiased !important;
         -moz-osx-font-smoothing: grayscale !important;
         text-rendering: optimizeLegibility !important;
@@ -1853,12 +1869,6 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
         width: 98%;
         max-height: 95vh;
         overflow-y: auto;
-    }
-    
-    /* Allow horizontal scrolling for certificate on mobile */
-    .modal-content #certificateContent {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
     
     .keyfeature-badge {
