@@ -85,6 +85,29 @@
     <h1 style="color: white;">School Management System </h1>
                     <p>Begin managing your school records efficiently with our easy-to-use system</p>
                     
+                    <!-- User Auth Status Display -->
+                    <div id="userAuthDisplay" class="user-auth-display">
+                        <div class="user-auth-content">
+                            <div class="user-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="8" r="4" fill="currentColor"/>
+                                    <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="user-info">
+                                <span class="user-label">Admin</span>
+                                <span id="displayUserEmail" class="user-email"></span>
+                            </div>
+                        </div>
+                        <button class="sign-out-btn" onclick="signOutUser()" title="Sign Out">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5z" fill="currentColor"/>
+                                <path d="M4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" fill="currentColor"/>
+                            </svg>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                    
                     <br>
                     <div class="cta-buttons">
                         <button class="btn btn-primary btn-large" onclick="showTab('admission')">Add New Student</button>
@@ -338,6 +361,52 @@
                     </div>
 
                     <div class="form-section">
+                        <h3 style="color: #333D4E;">Additional Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nationality">Nationality *</label>
+                                <input type="text" id="nationality" name="nationality" placeholder="e.g., Indian" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="motherTongue">Mother Tongue *</label>
+                                <input type="text" id="motherTongue" name="motherTongue" placeholder="e.g., Marathi" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="progressInStudy">Progress in Study *</label>
+                                <select id="progressInStudy" name="progressInStudy" required>
+                                    <option value="">Select Progress</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Satisfactory">Satisfactory</option>
+                                    <option value="Needs Improvement">Needs Improvement</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="behaviour">Behaviour *</label>
+                                <select id="behaviour" name="behaviour" required>
+                                    <option value="">Select Behaviour</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Satisfactory">Satisfactory</option>
+                                    <option value="Needs Improvement">Needs Improvement</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reasonForLeaving">Reason for Leaving Previous School</label>
+                                <textarea id="reasonForLeaving" name="reasonForLeaving" rows="2" placeholder="Enter reason (if applicable)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
                         <h3 style="color: #333D4E;">Contact Information</h3>
                         <div class="form-row">
                             <div class="form-group">
@@ -535,6 +604,52 @@
                     </div>
 
                     <div class="form-section">
+                        <h3>Additional Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editNationality">Nationality *</label>
+                                <input type="text" id="editNationality" name="nationality" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editMotherTongue">Mother Tongue *</label>
+                                <input type="text" id="editMotherTongue" name="motherTongue" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editProgressInStudy">Progress in Study *</label>
+                                <select id="editProgressInStudy" name="progressInStudy" required>
+                                    <option value="">Select Progress</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Satisfactory">Satisfactory</option>
+                                    <option value="Needs Improvement">Needs Improvement</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editBehaviour">Behaviour *</label>
+                                <select id="editBehaviour" name="behaviour" required>
+                                    <option value="">Select Behaviour</option>
+                                    <option value="Excellent">Excellent</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Satisfactory">Satisfactory</option>
+                                    <option value="Needs Improvement">Needs Improvement</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editReasonForLeaving">Reason for Leaving Previous School</label>
+                                <textarea id="editReasonForLeaving" name="reasonForLeaving" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
                         <h3>Contact Information</h3>
                         <div class="form-row">
                             <div class="form-group">
@@ -560,6 +675,35 @@
                         <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            <div class="auth-container">
+                <h2>Admin Authentication Required</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 30px;">Please sign in with your authorized Google account to access this feature.</p>
+                
+                <div id="authStatus" style="display: none; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;"></div>
+                
+                <button class="btn btn-google" onclick="signInWithGoogle()">
+                    <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="margin-right: 10px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        <path fill="none" d="M0 0h48v48H0z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <div id="userInfo" style="display: none; margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0; color: #333;">Signed in as:</p>
+                    <p id="userEmail" style="margin: 5px 0 0 0; font-weight: 600; color: #0066cc;"></p>
+                </div>
             </div>
         </div>
     </div>

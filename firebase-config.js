@@ -23,9 +23,21 @@ const firebaseConfig = {
 // Initialize Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, push, remove, update, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-// Export database functions
-export { database, ref, set, get, push, remove, update, child };
+// Admin whitelist - Add authorized email addresses here
+const ADMIN_EMAILS = [
+    'dmchaudhari76@gmail.com',
+    'instamine9@gmail.com'  // Replace with your Gmail address
+    // Add more authorized emails below:
+    // 'another-admin@gmail.com',
+    // 'third-admin@gmail.com',
+];
+
+// Export database functions and auth
+export { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, ADMIN_EMAILS };

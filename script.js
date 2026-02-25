@@ -1,5 +1,9 @@
 // Import Firebase modules
-import { database, ref, set, get, push, remove, update, child } from './firebase-config.js';
+import { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, ADMIN_EMAILS } from './firebase-config.js';
+
+// Authentication state
+let currentUser = null;
+let isAdmin = false;
 
 // Initialize students array
 let students = [];
@@ -59,6 +63,11 @@ admissionForm.addEventListener('submit', async function(e) {
         section: formData.get('section'),
         admissionDate: formData.get('admissionDate'),
         previousSchool: formData.get('previousSchool'),
+        nationality: formData.get('nationality'),
+        motherTongue: formData.get('motherTongue'),
+        progressInStudy: formData.get('progressInStudy'),
+        behaviour: formData.get('behaviour'),
+        reasonForLeaving: formData.get('reasonForLeaving'),
         address: formData.get('address'),
         phone: formData.get('phone'),
         email: formData.get('email'),
@@ -95,6 +104,13 @@ admissionForm.addEventListener('submit', async function(e) {
 
 // Tab switching
 function showTab(tabName) {
+    // Check if authentication is required
+    if ((tabName === 'admission' || tabName === 'students') && !isAdmin) {
+        // Show authentication modal
+        openAuthModal(tabName);
+        return;
+    }
+
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -135,7 +151,25 @@ function displayStudents() {
         return;
     }
     
-    studentsList.innerHTML = students.map(student => `
+    // Sort students by registration number in ascending order
+    const sortedStudents = [...students].sort((a, b) => {
+        const regA = a.registrationNo.toString();
+        const regB = b.registrationNo.toString();
+        
+        // Try to parse as numbers first
+        const numA = parseInt(regA);
+        const numB = parseInt(regB);
+        
+        // If both are valid numbers, compare numerically
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        
+        // Otherwise, compare as strings
+        return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    
+    studentsList.innerHTML = sortedStudents.map(student => `
         <div class="student-card" data-id="${student.id}">
             <div class="student-info">
                 <div class="info-item">
@@ -208,6 +242,36 @@ function displayStudents() {
                     <span class="value">${student.previousSchool}</span>
                 </div>
                 ` : ''}
+                ${student.nationality ? `
+                <div class="info-item">
+                    <span class="label">Nationality</span>
+                    <span class="value">${student.nationality}</span>
+                </div>
+                ` : ''}
+                ${student.motherTongue ? `
+                <div class="info-item">
+                    <span class="label">Mother Tongue</span>
+                    <span class="value">${student.motherTongue}</span>
+                </div>
+                ` : ''}
+                ${student.progressInStudy ? `
+                <div class="info-item">
+                    <span class="label">Progress in Study</span>
+                    <span class="value">${student.progressInStudy}</span>
+                </div>
+                ` : ''}
+                ${student.behaviour ? `
+                <div class="info-item">
+                    <span class="label">Behaviour</span>
+                    <span class="value">${student.behaviour}</span>
+                </div>
+                ` : ''}
+                ${student.reasonForLeaving ? `
+                <div class="info-item">
+                    <span class="label">Reason for Leaving Previous School</span>
+                    <span class="value">${student.reasonForLeaving}</span>
+                </div>
+                ` : ''}
                 <div class="info-item">
                     <span class="label">Address</span>
                     <span class="value">${student.address}</span>
@@ -275,21 +339,44 @@ function exportToCSV() {
         'Religion',
         'Caste',
         'Sub Caste',
+        'Nationality',
+        'Mother Tongue',
         'Class',
         'Section',
         'Admission Date',
         'Previous School',
+        'Progress in Study',
+        'Behaviour',
+        'Reason for Leaving Previous School',
         'Address',
         'Phone',
         'Email',
         'Date Added'
     ];
 
+    // Sort students by registration number in ascending order
+    const sortedStudents = [...students].sort((a, b) => {
+        const regA = a.registrationNo.toString();
+        const regB = b.registrationNo.toString();
+        
+        // Try to parse as numbers first
+        const numA = parseInt(regA);
+        const numB = parseInt(regB);
+        
+        // If both are valid numbers, compare numerically
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        
+        // Otherwise, compare as strings
+        return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
     // Convert students data to CSV rows
     const csvRows = [];
     csvRows.push(headers.join(','));
 
-    students.forEach(student => {
+    sortedStudents.forEach(student => {
         const row = [
             `"${student.registrationNo || ''}"`,
             `"${student.studentName || ''}"`,
@@ -304,10 +391,15 @@ function exportToCSV() {
             `"${student.religion || ''}"`,
             `"${student.caste || ''}"`,
             `"${student.subCaste || ''}"`,
+            `"${student.nationality || ''}"`,
+            `"${student.motherTongue || ''}"`,
             `"${student.class || ''}"`,
             `"${student.section || ''}"`,
             `"${student.admissionDate || ''}"`,
             `"${student.previousSchool || ''}"`,
+            `"${student.progressInStudy || ''}"`,
+            `"${student.behaviour || ''}"`,
+            `"${student.reasonForLeaving || ''}"`,
             `"${student.address || ''}"`,
             `"${student.phone || ''}"`,
             `"${student.email || ''}"`,
@@ -609,6 +701,11 @@ function editStudent(id) {
     document.getElementById('editSection').value = student.section;
     document.getElementById('editAdmissionDate').value = student.admissionDate;
     document.getElementById('editPreviousSchool').value = student.previousSchool || '';
+    document.getElementById('editNationality').value = student.nationality || '';
+    document.getElementById('editMotherTongue').value = student.motherTongue || '';
+    document.getElementById('editProgressInStudy').value = student.progressInStudy || '';
+    document.getElementById('editBehaviour').value = student.behaviour || '';
+    document.getElementById('editReasonForLeaving').value = student.reasonForLeaving || '';
     document.getElementById('editAddress').value = student.address;
     document.getElementById('editPhone').value = student.phone;
     document.getElementById('editEmail').value = student.email || '';
@@ -664,6 +761,11 @@ editForm.addEventListener('submit', async function(e) {
         section: formData.get('section'),
         admissionDate: formData.get('admissionDate'),
         previousSchool: formData.get('previousSchool'),
+        nationality: formData.get('nationality'),
+        motherTongue: formData.get('motherTongue'),
+        progressInStudy: formData.get('progressInStudy'),
+        behaviour: formData.get('behaviour'),
+        reasonForLeaving: formData.get('reasonForLeaving'),
         address: formData.get('address'),
         phone: formData.get('phone'),
         email: formData.get('email'),
@@ -694,6 +796,163 @@ editForm.addEventListener('submit', async function(e) {
 // Initialize display on page load - load immediately
 loadStudents();
 
+// ==================== AUTHENTICATION FUNCTIONS ====================
+
+// Store the intended tab to navigate to after successful authentication
+let intendedTab = null;
+
+// Open authentication modal
+function openAuthModal(tabName) {
+    intendedTab = tabName;
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Close authentication modal
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    intendedTab = null;
+}
+
+// Sign in with Google
+async function signInWithGoogle() {
+    const authStatus = document.getElementById('authStatus');
+    
+    try {
+        authStatus.style.display = 'block';
+        authStatus.className = '';
+        authStatus.textContent = 'Signing in...';
+        
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        
+        // Check if user email is in admin whitelist
+        if (ADMIN_EMAILS.includes(user.email)) {
+            authStatus.className = 'success';
+            authStatus.textContent = '✅ Authentication successful!';
+            
+            setTimeout(() => {
+                closeAuthModal();
+                if (intendedTab) {
+                    // Now that user is authenticated, directly navigate
+                    const tabName = intendedTab;
+                    intendedTab = null;
+                    
+                    // Hide all tabs
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    
+                    // Show the intended tab
+                    if (tabName === 'admission') {
+                        const admissionTab = document.getElementById('admission-tab');
+                        if (admissionTab) admissionTab.classList.add('active');
+                    } else if (tabName === 'students') {
+                        const studentsTab = document.getElementById('students-tab');
+                        if (studentsTab) studentsTab.classList.add('active');
+                        displayStudents();
+                    }
+                }
+            }, 1000);
+        } else {
+            // User is not authorized
+            authStatus.className = 'error';
+            authStatus.textContent = '❌ Access denied. Your email is not authorized to access this system.';
+            
+            // Sign out the user
+            await signOut(auth);
+            
+            setTimeout(() => {
+                authStatus.style.display = 'none';
+            }, 4000);
+        }
+    } catch (error) {
+        console.error('Authentication error:', error);
+        authStatus.className = 'error';
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+            authStatus.textContent = '⚠️ Sign-in cancelled. Please try again.';
+        } else if (error.code === 'auth/popup-blocked') {
+            authStatus.textContent = '⚠️ Popup blocked. Please allow popups for this site.';
+        } else {
+            authStatus.textContent = '❌ Authentication failed. Please try again.';
+        }
+        
+        setTimeout(() => {
+            authStatus.style.display = 'none';
+        }, 4000);
+    }
+}
+
+// Sign out user
+async function signOutUser() {
+    try {
+        await signOut(auth);
+        alert('✅ Signed out successfully!');
+        
+        // Navigate back to home tab
+        showTab('home');
+    } catch (error) {
+        console.error('Sign out error:', error);
+        alert('❌ Error signing out. Please try again.');
+    }
+}
+
+// Listen to authentication state changes
+onAuthStateChanged(auth, (user) => {
+    if (user && ADMIN_EMAILS.includes(user.email)) {
+        // User is signed in and authorized
+        currentUser = user;
+        isAdmin = true;
+        
+        // Show user info in navigation
+        const userAuthDisplay = document.getElementById('userAuthDisplay');
+        const displayUserEmail = document.getElementById('displayUserEmail');
+        
+        if (userAuthDisplay && displayUserEmail) {
+            displayUserEmail.textContent = user.email;
+            displayUserEmail.title = user.email; // Show full email on hover
+            userAuthDisplay.style.display = 'flex';
+            
+            // Add pulse animation on first appearance
+            setTimeout(() => {
+                userAuthDisplay.style.animation = 'scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), pulseGlow 2s ease-in-out 0.5s 2';
+            }, 100);
+        }
+        
+        // Show user info in modal (if open)
+        const userInfo = document.getElementById('userInfo');
+        const userEmail = document.getElementById('userEmail');
+        if (userInfo && userEmail) {
+            userEmail.textContent = user.email;
+            userInfo.style.display = 'block';
+        }
+    } else {
+        // User is signed out or not authorized
+        currentUser = null;
+        isAdmin = false;
+        
+        // Hide user info in navigation
+        const userAuthDisplay = document.getElementById('userAuthDisplay');
+        if (userAuthDisplay) {
+            userAuthDisplay.style.display = 'none';
+        }
+        
+        // Hide user info in modal
+        const userInfo = document.getElementById('userInfo');
+        if (userInfo) {
+            userInfo.style.display = 'none';
+        }
+    }
+});
+
+// ==================== END AUTHENTICATION FUNCTIONS ====================
+
 window.addEventListener('DOMContentLoaded', function() {
     // Page elements ready
 });
@@ -709,6 +968,9 @@ window.editStudent = editStudent;
 window.closeEditModal = closeEditModal;
 window.closeModal = closeModal;
 window.printCertificate = printCertificate;
+window.signInWithGoogle = signInWithGoogle;
+window.signOutUser = signOutUser;
+window.closeAuthModal = closeAuthModal;
 
 const animatedElements = document.querySelectorAll('.service-card, .feature-card, .testimonial-card, .features-section, .specialty-section, .tech-card, .keyfeature-item');
 animatedElements.forEach(element => {
