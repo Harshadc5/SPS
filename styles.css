@@ -690,6 +690,37 @@ h2 {
         width: 95%;
         max-height: 90vh;
     }
+    
+    /* Certificate modal - full screen on mobile */
+    #certificateModal .modal-content {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+        height: 100vh;
+    }
+    
+    #certificateModal {
+        padding: 0;
+    }
+    
+    #certificateModal .close {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1001;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
 }
 
 .close {
@@ -728,41 +759,39 @@ h2 {
     .modal-actions .btn {
         width: 100%;
     }
+    
+    /* Certificate modal actions - fixed at bottom */
+    #certificateModal .modal-actions {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 15px;
+        margin: 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
 }
 
 /* Certificate Styles */
 .certificate {
     border: 4px solid #FF9A9E;
     padding: 30px;
-    margin: 20px auto;
+    margin: 20px 0;
     background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%);
     font-family: 'Georgia', serif;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    width: 750px; /* Fixed desktop width for A4-like appearance */
-    max-width: 100%;
+    min-width: 750px; /* Maintain desktop width */
 }
 
-/* Scale certificate to fit mobile screen as complete page */
+/* Keep certificate in desktop view on mobile - make container scrollable instead */
 @media (max-width: 768px) {
     #certificateContent {
-        padding: 10px;
-        overflow: visible;
-    }
-    
-    .certificate {
-        width: 750px;
-        transform-origin: top center;
-        transform: scale(0.48); /* Scale to fit mobile width */
-        margin: -150px auto -200px auto; /* Adjust margins after scaling */
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .certificate {
-        width: 750px;
-        transform-origin: top center;
-        transform: scale(0.85); /* Scale for tablets */
-        margin: -50px auto -80px auto;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -1228,7 +1257,6 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
         page-break-before: avoid !important;
         font-size: 11pt !important;
         line-height: 1.4 !important;
-        transform: none !important; /* Reset any scaling for print */
         -webkit-font-smoothing: antialiased !important;
         -moz-osx-font-smoothing: grayscale !important;
         text-rendering: optimizeLegibility !important;
@@ -1869,6 +1897,26 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
         width: 98%;
         max-height: 95vh;
         overflow-y: auto;
+    }
+    
+    /* Certificate modal - full width on small screens */
+    #certificateModal .modal-content {
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        margin: 0;
+        padding-bottom: 80px; /* Space for fixed button */
+    }
+    
+    /* Allow horizontal scrolling for certificate on mobile */
+    .modal-content #certificateContent {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #certificateContent {
+        padding: 5px;
     }
     
     .keyfeature-badge {
