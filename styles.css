@@ -405,23 +405,20 @@ h2 {
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: linear-gradient(135deg, #457B9D 0%, #1D3557 100%);
     color: white !important;
-    border: 2px solid #495057 !important;
-    box-shadow: 0 4px 15px rgba(73, 80, 87, 0.4);
-    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(69, 123, 157, 0.3);
 }
 
 .btn-secondary:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(73, 80, 87, 0.5) !important;
-    background: linear-gradient(135deg, #5a6268 0%, #343a40 100%) !important;
+    transform: none !important;
+    box-shadow: 0 4px 15px rgba(69, 123, 157, 0.3) !important;
+    background: linear-gradient(135deg, #457B9D 0%, #1D3557 100%) !important;
     color: white !important;
-    border: 2px solid #343a40 !important;
 }
 
 .btn-secondary:active {
-    transform: translateY(0px) scale(0.98);
+    transform: translateY(-1px) scale(1);
 }
 
 .btn-danger {
@@ -1121,19 +1118,18 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: linear-gradient(135deg, #6C757D 0%, #495057 100%);
     color: white;
-    border: 2px solid #495057;
-    box-shadow: 0 4px 15px rgba(73, 80, 87, 0.4);
-    font-weight: 600;
+    border: 2px solid #6C757D;
+    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.3);
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #5a6268 0%, #343a40 100%) !important;
+    background: linear-gradient(135deg, #5A6268 0%, #343A40 100%) !important;
     color: white !important;
-    border: 2px solid #343a40 !important;
+    border: 2px solid #5A6268 !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(73, 80, 87, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4) !important;
 }
 
 /* Responsive Design */
@@ -1165,26 +1161,6 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
     .btn-large {
         width: 100%;
         max-width: 300px;
-    }
-    
-    /* Enhance button visibility on mobile */
-    .btn-secondary {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
-        color: white !important;
-        border: 3px solid #495057 !important;
-        box-shadow: 0 4px 15px rgba(73, 80, 87, 0.5) !important;
-        font-weight: 700 !important;
-        font-size: 16px !important;
-        padding: 14px 24px !important;
-    }
-    
-    .btn-secondary:hover,
-    .btn-secondary:active,
-    .btn-secondary:focus {
-        background: linear-gradient(135deg, #5a6268 0%, #343a40 100%) !important;
-        color: white !important;
-        border: 3px solid #343a40 !important;
-        box-shadow: 0 6px 20px rgba(73, 80, 87, 0.6) !important;
     }
 }
 
@@ -1699,7 +1675,7 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
 /* Buttons */
 .btn{display:inline-block;padding:10px 16px;border-radius:8px;border:0;cursor:pointer;font-weight:600;transition:transform .12s,filter .12s;}
 .btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(228,11,128,0.14);}
-.btn-secondary{background: linear-gradient(135deg, #6c757d 0%, #495057 100%);color:#fff;border:2px solid #495057;box-shadow: 0 3px 10px rgba(73, 80, 87, 0.3);font-weight:600;}
+.btn-secondary{background:linear-gradient(135deg, #6C757D 0%, #495057 100%);color:#fff;border:1px solid #6C757D;}
 
 /* Small screens: make CTA buttons stack */
 @media (max-width:600px){
