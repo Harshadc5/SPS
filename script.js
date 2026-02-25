@@ -163,26 +163,10 @@ function setNextRegistrationNumber() {
     // Don't auto-fill if user has already entered a value
     if (regNoInput.value && regNoInput.value.trim() !== '') return;
     
-    if (students.length === 0) {
-        // First student
-        regNoInput.value = '1';
-    } else {
-        // Find the highest registration number
-        let maxRegNo = 0;
-        
-        students.forEach(student => {
-            const regNo = student.registrationNo;
-            // Try to parse as integer
-            const numRegNo = parseInt(regNo);
-            
-            if (!isNaN(numRegNo) && numRegNo > maxRegNo) {
-                maxRegNo = numRegNo;
-            }
-        });
-        
-        // Set next registration number
-        regNoInput.value = (maxRegNo + 1).toString();
-    }
+    // Always use sequential numbering starting from 1
+    // Next registration number = total students + 1
+    const nextRegNo = students.length + 1;
+    regNoInput.value = nextRegNo.toString();
     
     // Make it readonly but allow manual change if needed
     regNoInput.setAttribute('placeholder', 'Auto-generated: ' + regNoInput.value);
