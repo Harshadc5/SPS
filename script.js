@@ -842,10 +842,18 @@ async function signInWithGoogle() {
         // Use redirect for mobile devices, popup for desktop
         if (isMobileDevice()) {
             // Mobile: use redirect (will reload page)
-            await signInWithRedirect(auth, googleProvider);
-            // Note: Code after this won't execute as page will redirect
+            console.log('Mobile device detected, using redirect...');
+            // Close modal before redirect to prevent UI issues
+            setTimeout(() => {
+                signInWithRedirect(auth, googleProvider).catch((error) => {
+                    console.error('Redirect error:', error);
+                    authStatus.className = 'error';
+                    authStatus.textContent = `❌ Error: ${error.message}`;
+                });
+            }, 300);
         } else {
             // Desktop: use popup (stays on same page)
+            console.log('Desktop device detected, using popup...');
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             
@@ -892,6 +900,8 @@ async function signInWithGoogle() {
         }
     } catch (error) {
         console.error('Authentication error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
         authStatus.className = 'error';
         
         if (error.code === 'auth/popup-closed-by-user') {
@@ -900,13 +910,17 @@ async function signInWithGoogle() {
             authStatus.textContent = '⚠️ Popup blocked. Please allow popups for this site.';
         } else if (error.code === 'auth/cancelled-popup-request') {
             authStatus.textContent = '⚠️ Only one sign-in popup allowed at a time.';
+        } else if (error.code === 'auth/unauthorized-domain') {
+            authStatus.textContent = '❌ Domain not authorized. Please contact admin.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+            authStatus.textContent = '❌ Google sign-in not enabled. Please contact admin.';
         } else {
-            authStatus.textContent = '❌ Authentication failed. Please try again.';
+            authStatus.textContent = `❌ ${error.message || 'Authentication failed. Please try again.'}`;
         }
         
         setTimeout(() => {
             authStatus.style.display = 'none';
-        }, 4000);
+        }, 6000);
     }
 }
 
@@ -928,11 +942,14 @@ async function signOutUser() {
 // Handle redirect result on page load (for mobile authentication)
 getRedirectResult(auth)
     .then((result) => {
+        console.log('Checking redirect result...', result);
         if (result && result.user) {
             const user = result.user;
+            console.log('User signed in via redirect:', user.email);
             
             // Check if user is authorized
             if (ADMIN_EMAILS.includes(user.email)) {
+                console.log('User authorized!');
                 // User is authorized, check for intended tab
                 const savedIntendedTab = sessionStorage.getItem('intendedTab');
                 if (savedIntendedTab) {
@@ -956,14 +973,23 @@ getRedirectResult(auth)
                 }
             } else {
                 // User is not authorized
+                console.log('User not authorized:', user.email);
                 alert('❌ Access denied. Your email is not authorized to access this system.');
                 signOut(auth);
             }
+        } else {
+            console.log('No redirect result found');
         }
     })
     .catch((error) => {
-        if (error.code !== 'auth/popup-closed-by-user') {
-            console.error('Redirect result error:', error);
+        console.error('Redirect result error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        if (error.code === 'auth/unauthorized-domain') {
+            alert('❌ This domain is not authorized in Firebase. Please add it to authorized domains in Firebase Console.');
+        } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/network-request-failed') {
+            alert(`❌ Authentication error: ${error.message}`);
         }
     });
 

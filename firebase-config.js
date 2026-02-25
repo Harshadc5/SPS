@@ -30,6 +30,12 @@ const database = getDatabase(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Configure Google Provider for better mobile support
+googleProvider.setCustomParameters({
+    prompt: 'select_account',  // Force account selection
+    display: 'popup'
+});
+
 // Admin whitelist - Add authorized email addresses here
 const ADMIN_EMAILS = [
     'dmchaudhari76@gmail.com',
