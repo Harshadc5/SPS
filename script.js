@@ -974,8 +974,34 @@ getRedirectResult(auth)
             } else {
                 // User is not authorized
                 console.log('User not authorized:', user.email);
-                alert('❌ Access denied. Your email is not authorized to access this system.');
-                signOut(auth);
+                
+                // Sign out the unauthorized user
+                signOut(auth).then(() => {
+                    // Show modal with error message
+                    const authModal = document.getElementById('authModal');
+                    const authStatus = document.getElementById('authStatus');
+                    
+                    if (authModal && authStatus) {
+                        authModal.style.display = 'block';
+                        authStatus.style.display = 'block';
+                        authStatus.className = 'error';
+                        authStatus.innerHTML = `
+                            <strong>❌ Access Denied</strong><br>
+                            <span style="font-size: 14px;">Your email (${user.email}) is not authorized to access this system.</span><br>
+                            <span style="font-size: 13px; margin-top: 5px; display: block;">Please contact the administrator for access.</span>
+                        `;
+                        
+                        // Keep error visible for longer on mobile
+                        setTimeout(() => {
+                            authStatus.style.display = 'none';
+                        }, 8000);
+                    }
+                    
+                    // Also show an alert as backup
+                    setTimeout(() => {
+                        alert(`❌ Access Denied\n\nYour email (${user.email}) is not authorized to access this system.\n\nPlease contact the administrator for access.`);
+                    }, 300);
+                });
             }
         } else {
             console.log('No redirect result found');
@@ -986,9 +1012,32 @@ getRedirectResult(auth)
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
         
+        // Show modal with error
+        const authModal = document.getElementById('authModal');
+        const authStatus = document.getElementById('authStatus');
+        
         if (error.code === 'auth/unauthorized-domain') {
+            if (authModal && authStatus) {
+                authModal.style.display = 'block';
+                authStatus.style.display = 'block';
+                authStatus.className = 'error';
+                authStatus.innerHTML = `
+                    <strong>❌ Domain Not Authorized</strong><br>
+                    <span style="font-size: 13px;">This domain is not authorized in Firebase.</span><br>
+                    <span style="font-size: 12px; margin-top: 5px; display: block;">Administrator: Add this domain to Firebase Console → Authentication → Settings → Authorized domains</span>
+                `;
+            }
             alert('❌ This domain is not authorized in Firebase. Please add it to authorized domains in Firebase Console.');
         } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/network-request-failed') {
+            if (authModal && authStatus) {
+                authModal.style.display = 'block';
+                authStatus.style.display = 'block';
+                authStatus.className = 'error';
+                authStatus.innerHTML = `
+                    <strong>❌ Authentication Failed</strong><br>
+                    <span style="font-size: 13px;">${error.message || 'Please try again.'}</span>
+                `;
+            }
             alert(`❌ Authentication error: ${error.message}`);
         }
     });
