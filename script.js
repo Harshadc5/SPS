@@ -108,6 +108,14 @@ admissionForm.addEventListener('submit', async function(e) {
     }
 });
 
+// Form reset handler - auto-fill registration number after clearing
+admissionForm.addEventListener('reset', function(e) {
+    // Use setTimeout to ensure form is cleared before setting new value
+    setTimeout(() => {
+        setNextRegistrationNumber();
+    }, 10);
+});
+
 // Tab switching
 function showTab(tabName) {
     // Check if authentication is required
@@ -137,12 +145,47 @@ function showTab(tabName) {
         const admissionTab = document.getElementById('admission-tab');
         if (admissionTab) admissionTab.classList.add('active');
         if (tabBtns && tabBtns[1]) tabBtns[1].classList.add('active');
+        // Auto-fill next registration number
+        setNextRegistrationNumber();
     } else if (tabName === 'students') {
         const studentsTab = document.getElementById('students-tab');
         if (studentsTab) studentsTab.classList.add('active');
         if (tabBtns && tabBtns[2]) tabBtns[2].classList.add('active');
         displayStudents();
     }
+}
+
+// Auto-fill next registration number
+function setNextRegistrationNumber() {
+    const regNoInput = document.getElementById('registrationNo');
+    if (!regNoInput) return;
+    
+    // Don't auto-fill if user has already entered a value
+    if (regNoInput.value && regNoInput.value.trim() !== '') return;
+    
+    if (students.length === 0) {
+        // First student
+        regNoInput.value = '1';
+    } else {
+        // Find the highest registration number
+        let maxRegNo = 0;
+        
+        students.forEach(student => {
+            const regNo = student.registrationNo;
+            // Try to parse as integer
+            const numRegNo = parseInt(regNo);
+            
+            if (!isNaN(numRegNo) && numRegNo > maxRegNo) {
+                maxRegNo = numRegNo;
+            }
+        });
+        
+        // Set next registration number
+        regNoInput.value = (maxRegNo + 1).toString();
+    }
+    
+    // Make it readonly but allow manual change if needed
+    regNoInput.setAttribute('placeholder', 'Auto-generated: ' + regNoInput.value);
 }
 
 // Display all students
