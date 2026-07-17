@@ -526,19 +526,12 @@ function generateCertificate(id) {
                         <p style="color: #8B0000; font-size: 10px; margin: 2px 0; text-align: left;">
                             शाळा मान्यता क्रमांक -
                         </p>
-                        <div style="display: flex; justify-content: space-between; color: #8B0000; font-size: 11px; margin: 3px 0; border-bottom: 2px solid #8B0000; padding-bottom: 3px;">
-                            <span>फोन नं.- </span>
-                            <span>ई-मेल - marathiadhya.sarav@gmail.com</span>
-                        </div>
+                        <p style="color: #8B0000; font-size: 11px; margin: 3px 0; text-align: left; border-bottom: 2px solid #8B0000; padding-bottom: 3px;">
+                            फोन नं.- <span style="margin-left: 150px;">ई-मेल - marathiadhya.sarav@gmail.com</span>
+                        </p>
                         <div style="text-align: left; font-size: 13px; margin: 2px 0; line-height: 1.4;">
-                            <div style="display: flex; justify-content: space-between; color: #8B0000;">
-                                <span>● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - </span>
-                                <span>● यु. डायस क्र.-</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; color: #000000;">
-                                <span>दाखला क्र.- </span>
-                                <span>जनरल रजि.क्र.-</span>
-                            </div>
+                            <div style="color: #8B0000;">● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - <span style="margin-left: 140px;">● यु. डायस क्र.-</span></div>
+                            <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.-</span></div>
                         </div>
                     </div>
                     <img src="images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
@@ -551,24 +544,19 @@ function generateCertificate(id) {
             </div>
             
             <div class="certificate-body" style="font-size: 13px; line-height: 1.8;">
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">
-                    <span>स्टुडंट आय. डी. - </span>
-                    <span>यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span>
-                </div>
+                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">स्टुडंट आय. डी. - <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
                 
                 <p style="margin: 8px 0;">१) विद्यार्थीचे संपूर्ण नाव - <strong>${student.studentName}</strong> (वडीलांचे नाव) <strong>${student.fatherName}</strong> (आडनाव) <strong>${student.lastName || ''}</strong></p>
                 
                 <p style="margin: 8px 0;">२) आईचे नाव - <strong>${student.motherName}</strong></p>
                 
-                <p style="margin: 8px 0;">३) राष्ट्रीयत्व : भारतीय <span style="display: inline-block; width: 45%; text-align: right; float: right;">४) मातृभाषा : मराठी</span></p>
-                <div style="clear: both;"></div>
+                <p style="margin: 8px 0;">३) राष्ट्रीयत्व : भारतीय <span style="margin-left: 120px;">४) मातृभाषा : मराठी</span></p>
                 
-                <p style="margin: 8px 0;">५) धर्म : <strong>${student.religion}</strong> <span style="margin: 0 15px;">६) जात : <strong>${student.caste}</strong></span> <span style="margin: 0 15px;">७) पोटजात : <strong>${student.subCaste}</strong></span></p>
+                <p style="margin: 8px 0;">५) धर्म : <strong>${student.religion}</strong> <span style="margin-left: 40px;">६) जात : <strong>${student.caste}</strong></span> <span style="margin-left: 40px;">७) पोटजात : <strong>${student.subCaste}</strong></span></p>
                 
-                <p style="margin: 8px 0;">८) जन्मस्थळ (गाव / शहर) : <strong>${student.birthPlace}</strong> <span style="margin: 0 15px;">तालुका : <strong>${student.birthTaluka}</strong></span> <span style="margin: 0 15px;">जिल्हा : <strong>${student.birthDistrict}</strong></span></p>
+                <p style="margin: 8px 0;">८) जन्मस्थळ (गाव / शहर) : <strong>${student.birthPlace}</strong> <span style="margin-left: 40px;">तालुका : <strong>${student.birthTaluka}</strong></span> <span style="margin-left: 40px;">जिल्हा : <strong>${student.birthDistrict}</strong></span></p>
                 
-                <p style="margin: 8px 0;">९) राज्य : महाराष्ट्र <span style="display: inline-block; width: 45%; text-align: right; float: right;">१०) देश : भारत</span></p>
-                <div style="clear: both;"></div>
+                <p style="margin: 8px 0;">९) राज्य : महाराष्ट्र <span style="margin-left: 120px;">१०) देश : भारत</span></p>
                 
                 <p style="margin: 8px 0;">११) जन्म दिनांक अक्षरी - <strong>${formatDateInWords(student.dob)}</strong></p>
                 
@@ -576,11 +564,9 @@ function generateCertificate(id) {
                 
                 <p style="margin: 8px 0;">१३) या पूर्वी शिकून आलेल्या शाळेचे नाव - <strong>${student.previousSchool || 'लागू नाही'}</strong></p>
                 
-                <p style="margin:8px 0;">१४) या शाळेत प्रवेश घेतल्याचा दिनांक - <strong>${formatDate(student.admissionDate)}</strong> <span style="display: inline-block; width: 45%; text-align: right; float: right;">१५) इयता - <strong>${student.class}</strong></span></p>
-                <div style="clear: both;"></div>
+                <p style="margin:8px 0;">१४) या शाळेत प्रवेश घेतल्याचा दिनांक - <strong>${formatDate(student.admissionDate)}</strong> <span style="margin-left: 60px;">१५) इयता - <strong>${student.class}</strong></span></p>
                 
-                <p style="margin: 8px 0;">१६) उपस्थितांतील प्रगती - <strong>समाधानकारक</strong> <span style="display: inline-block; width: 45%; text-align: right; float: right;">१७) वर्गक्रम - <strong>नियमित</strong></span></p>
-                <div style="clear: both;"></div>
+                <p style="margin: 8px 0;">१६) उपस्थितांतील प्रगती - <strong>समाधानकारक</strong> <span style="margin-left: 60px;">१७) वर्गक्रम - <strong>नियमित</strong></span></p>
                 
                 <p style="margin: 8px 0;">१८) शाळा सोडल्याचा दिनांक - <strong>${formatDate(new Date().toISOString().split('T')[0])}</strong></p>
                 
