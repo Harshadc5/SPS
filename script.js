@@ -1269,6 +1269,7 @@ editForm.addEventListener('submit', async function(e) {
             await loadStudents();
         } else {
             alert('❌ Error: Student reference not found!');
+        }
     } catch (error) {
         console.error('Error updating student:', error);
         alert('❌ Error updating student in database. Check console for details.');
