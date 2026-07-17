@@ -689,55 +689,39 @@ function closeModal() {
     certificateModal.style.display = 'none';
 }
 
-// Print certificate
+// Print certificate - uses hidden iframe for fast preview on all devices
+// Avoids popup blocker (mobile) and slow full-page render (window.print directly)
 function printCertificate() {
-    if (isMobileDevice()) {
-        // On mobile, window.open() is blocked by popup blocker.
-        // Instead, use window.print() directly on the page.
-        // The @media print CSS in styles.css will hide everything
-        // except the certificate modal and render it at A4 width.
-        window.print();
-    } else {
-        // Desktop: open a dedicated print window for clean output
-        const content = document.getElementById('certificateContent').innerHTML;
-        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
-        const contentWithBase = content
-            .replace(/src="([^"]*images\/)/g, `src="${baseUrl}images/`);
-        const printWindow = window.open('', '_blank', 'width=900,height=700');
-        if (!printWindow) {
-            // Popup was blocked even on desktop — fall back to direct print
-            window.print();
-            return;
+    const content = document.getElementById('certificateContent').innerHTML;
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+
+    // Fix relative image paths to absolute so they load inside the iframe
+    const contentWithBase = content.replace(/src="(?!http)([^"]+)"/g, (match, path) => {
+        if (path.startsWith('images/') || path.includes('/images/')) {
+            return `src="${baseUrl}${path.replace(/^\//, '')}"`;
         }
-        printWindow.document.write(`<!DOCTYPE html>
+        return match;
+    });
+
+    const certHTML = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=794, initial-scale=1.0, shrink-to-fit=no">
     <title>School Leaving Certificate</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
             box-sizing: border-box;
+            margin: 0; padding: 0;
         }
-        html {
+        html, body {
             width: 210mm;
             min-width: 210mm;
-            margin: 0;
-            padding: 0;
             background: white;
-        }
-        body {
-            width: 210mm;
-            min-width: 210mm;
-            margin: 0;
-            padding: 0;
-            background: white;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             overflow-x: hidden;
         }
         .certificate {
@@ -745,9 +729,8 @@ function printCertificate() {
             padding: 8mm !important;
             margin: 0 !important;
             width: 100% !important;
-            max-width: 100% !important;
             background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%) !important;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 10pt;
             line-height: 1.5;
             overflow: hidden;
@@ -756,25 +739,53 @@ function printCertificate() {
         img { max-height: 80px !important; max-width: 80px !important; }
         @page { size: A4 portrait; margin: 8mm; }
         @media print {
-            html, body { width: 210mm !important; height: auto !important; overflow: hidden !important; }
-            .certificate { page-break-inside: avoid !important; break-inside: avoid !important; }
+            html, body {
+                width: 210mm !important;
+                height: auto !important;
+                overflow: hidden !important;
+            }
+            .certificate {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+            }
         }
     </style>
 </head>
-<body>
-    ${contentWithBase}
-    <script>
-        window.onload = function() {
-            setTimeout(function() {
+<body>${contentWithBase}</body>
+</html>`;
+
+    // Remove any existing print iframe
+    const existing = document.getElementById('_printFrame');
+    if (existing) existing.remove();
+
+    // Create hidden iframe and inject certificate HTML
+    const iframe = document.createElement('iframe');
+    iframe.id = '_printFrame';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;';
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(certHTML);
+    iframe.contentDocument.close();
+
+    // Wait for iframe content to fully render then print
+    iframe.onload = function () {
+        setTimeout(function () {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                // Fallback: direct page print
                 window.print();
-                setTimeout(function() { window.close(); }, 500);
-            }, 800);
-        };
-    <\/script>
-</body>
-</html>`);
-        printWindow.document.close();
-    }
+            }
+            // Clean up iframe after print dialog closes
+            setTimeout(function () {
+                if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            }, 2000);
+        }, 600);
+    };
 }
 
 // Close modal when clicking outside
