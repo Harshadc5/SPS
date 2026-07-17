@@ -702,7 +702,6 @@ async function deleteStudent(id) {
             await loadStudents();
         } else {
             showToast('❌ Error: Student not found!', 'error');
-        }
     } catch (error) {
         console.error('Error deleting student:', error);
         showToast('❌ Error deleting student from database. Check console for details.', 'error');
@@ -1269,7 +1268,6 @@ editForm.addEventListener('submit', async function(e) {
             await loadStudents();
         } else {
             alert('❌ Error: Student reference not found!');
-        }
     } catch (error) {
         console.error('Error updating student:', error);
         alert('❌ Error updating student in database. Check console for details.');
@@ -1315,23 +1313,9 @@ async function signInWithGoogle() {
         if (intendedTab) {
             sessionStorage.setItem('intendedTab', intendedTab);
         }
-        
-        // Use redirect for mobile devices, popup for desktop
-        if (isMobileDevice()) {
-            // Mobile: use redirect (will reload page)
-            console.log('Mobile device detected, using redirect...');
-            // Close modal before redirect to prevent UI issues
-            setTimeout(() => {
-                signInWithRedirect(auth, googleProvider).catch((error) => {
-                    console.error('Redirect error:', error);
-                    authStatus.className = 'error';
-                    authStatus.textContent = `❌ Error: ${error.message}`;
-                });
-            }, 300);
-        } else {
-            // Desktop: use popup (stays on same page)
-            console.log('Desktop device detected, using popup...');
-            const result = await signInWithPopup(auth, googleProvider);
+        // Use popup for all devices (Redirect fails on mobile browsers with strict cross-site storage blocks)
+        console.log('Initiating sign in popup...');
+        const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             
             // Check if user email is in admin whitelist
@@ -1374,7 +1358,6 @@ async function signInWithGoogle() {
                     authStatus.style.display = 'none';
                 }, 4000);
             }
-        }
     } catch (error) {
         console.error('Authentication error:', error);
         console.error('Error code:', error.code);
@@ -1619,3 +1602,4 @@ window.showToast = function(message, type = 'success') {
         toast.classList.remove('show');
     }, 3000);
 }
+
