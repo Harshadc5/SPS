@@ -5,6 +5,40 @@ import { database, ref, set, get, push, remove, update, child, auth, googleProvi
 let currentUser = null;
 let isAdmin = false;
 
+// Override native alert with beautiful custom toast
+window.alert = function(message) {
+    // Remove existing toast if any
+    const existing = document.querySelector('.custom-toast');
+    if (existing) existing.remove();
+
+    // Determine type (success or error) based on emojis in message
+    const isError = message.includes('❌') || message.includes('Error') || message.toLowerCase().includes('failed');
+    
+    // Clean up emojis from message for cleaner display
+    const cleanMsg = message.replace('✅ ', '').replace('❌ ', '').replace('?', '').trim();
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `custom-toast ${isError ? 'error' : 'success'}`;
+    
+    // Add icon based on type
+    const icon = isError ? 
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>' : 
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+    
+    toast.innerHTML = `${icon} <span>${cleanMsg}</span>`;
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+};
+
 // Detect if user is on mobile device
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -19,6 +53,10 @@ const admissionForm = document.getElementById('admissionForm');
 const studentsList = document.getElementById('studentsList');
 const certificateModal = document.getElementById('certificateModal');
 const certificateContent = document.getElementById('certificateContent');
+const bonafideModal = document.getElementById('bonafideModal');
+const bonafideContent = document.getElementById('bonafideContent');
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
 
 // Load students from Firebase on page load
 async function loadStudents() {
@@ -321,13 +359,16 @@ function displayStudents() {
                 ` : ''}
             </div>
             <div class="student-actions">
-                <button class="btn btn-success" onclick="generateCertificate(${student.id})">
+                <button class="btn btn-success" onclick="generateCertificate(${student.id})" style="margin-bottom: 5px;">
                     Generate LC
                 </button>
-                <button class="btn btn-primary" onclick="editStudent(${student.id})">
+                <button class="btn btn-info" onclick="generateBonafide(${student.id})" style="margin-bottom: 5px; background: #17a2b8; color: white;">
+                    Generate Bonafide
+                </button>
+                <button class="btn btn-primary" onclick="editStudent(${student.id})" style="margin-bottom: 5px;">
                     Edit
                 </button>
-                <button class="btn btn-danger" onclick="deleteStudent(${student.id})">
+                <button class="btn btn-danger" onclick="deleteStudent(${student.id})" style="margin-bottom: 5px;">
                     Delete
                 </button>
             </div>
@@ -600,6 +641,100 @@ function generateCertificate(id) {
     certificateModal.style.display = 'block';
 }
 
+// Generate Bonafide Certificate
+function generateBonafide(id) {
+    const student = students.find(s => s.id === id);
+    if (!student) {
+        alert('❌ Student not found!');
+        return;
+    }
+    
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+    const bonafide = `
+        <div class="bonafide-certificate" style="padding: 20px; font-family: 'Noto Sans Devanagari', Arial, sans-serif; max-width: 100%; margin: 0 auto; box-sizing: border-box; min-height: 297mm; position: relative;">
+            
+            <div class="bonafide-header">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
+                    <img src="${baseUrl}images/logo.png" alt="School Logo" style="max-height: 90px; max-width: 90px;">
+                    <div style="text-align: center; flex: 1; margin: 0 15px;">
+                        <p style="color: #8B0000; font-size: 15px; margin: 2px 0; font-weight: 600;">
+                            महात्मा गांधी विद्यामंदिर शिक्षण संस्था,
+                        </p>
+                        <h1 style="color: #8B0000; font-size: 24px; margin: 5px 0; font-weight: 700;">
+                            मराठी अध्यापक विद्यालय संलग्नित सरावपाठ शाळा
+                        </h1>
+                        <p style="color: #8B0000; font-size: 14px; margin: 5px 0;">
+                            भायगांव रोड, मालेगांव कॅम्प, ता. मालेगांव जि. नाशिक
+                        </p>
+                    </div>
+                    <img src="${baseUrl}images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
+                </div>
+                <div style="border-bottom: 2px solid #8B0000; margin-bottom: 10px;"></div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 16px; font-weight: 600;">
+                    <div>जा.क्र.:- समक्ष /${new Date().getFullYear()}/${new Date().getFullYear() + 1}</div>
+                    <div>दिनांक.: <span style="color: red;">${formatDate(new Date().toISOString().split('T')[0])}</span></div>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <h2 style="font-size: 28px; margin: 0; font-weight: 700;">----: बोनाफाईड सर्टिफिकेट :----</h2>
+                </div>
+            </div>
+            
+            <div class="bonafide-body" style="font-size: 18px; line-height: 2; margin-top: 40px; padding: 0 20px; position: relative; z-index: 2;">
+                <p style="text-indent: 50px; text-align: justify; margin-bottom: 30px;">
+                    दाखला देण्यात येतो की, <span style="color: red; font-weight: bold;">कु. ${student.studentName} ${student.fatherName} ${student.lastName || ''}</span> हा / ही आमच्या अध्यापक विद्यालय संलग्न सराव पाठशाळेत शिकत असून त्याची / तिची शालेय अभिलेखानुसार माहिती खालील प्रमाणे.
+                </p>
+                
+                <div style="margin-left: 20px; font-weight: 600;">
+                    <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
+                        <div>र.नं.</div><div>:-</div><div>${student.registrationNo || ''}</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
+                        <div>नाव</div><div>:-</div><div style="color: red;">कु. ${student.studentName} ${student.fatherName} ${student.lastName || ''}</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
+                        <div>जन्मतारीख</div><div>:-</div><div>${formatDate(student.dob)}</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
+                        <div>जात</div><div>:-</div><div>${student.caste}${student.subCaste ? '-' + student.subCaste : ''}</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 30px;">
+                        <div>वर्ग</div><div>:-</div><div>${student.class}</div>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 30px; font-weight: 600; text-align: justify;">
+                    वरील प्रमाणे माहिती बरोबर आहे सदर चा दाखला शिष्यवृत्ती व बँकेच्या / वसतीगृह प्रवेशासाठी / जातीच्या दाखल्यासाठी / रेशनकार्डसाठी दिला असे.
+                </p>
+                
+                <div style="margin-top: 60px; font-weight: 600;">
+                    <div style="display: grid; grid-template-columns: 80px 30px 1fr; margin-bottom: 15px;">
+                        <div>स्थळ</div><div>:-</div><div>मालेगाव कॅम्प.</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 80px 30px 1fr; margin-bottom: 15px;">
+                        <div>दिनांक</div><div>:-</div><div style="color: red;">${formatDate(new Date().toISOString().split('T')[0])}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bonafide-footer" style="display: flex; justify-content: space-between; margin-top: 80px; padding: 0 40px; position: relative; z-index: 2;">
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 50px;"></div>
+                    <div style="font-weight: bold; font-size: 18px;">लिपीक</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 50px;"></div>
+                    <div style="font-weight: bold; font-size: 18px;">मुख्याध्यापक</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    bonafideContent.innerHTML = bonafide;
+    bonafideModal.style.display = 'block';
+}
+
 // Format date in words (Marathi)
 function formatDateInWords(dateStr) {
     const days = ['', 'एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ', 'दहा',
@@ -684,9 +819,13 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-// Close modal
+// Close modals
 function closeModal() {
     certificateModal.style.display = 'none';
+}
+
+function closeBonafideModal() {
+    bonafideModal.style.display = 'none';
 }
 
 // Print certificate - generates PDF directly using html2canvas + jsPDF
@@ -765,10 +904,79 @@ async function printCertificate() {
     }
 }
 
+// Print Bonafide Certificate - generates PDF directly using html2canvas + jsPDF
+async function printBonafide() {
+    const certEl = document.querySelector('#bonafideContent .bonafide-certificate');
+    if (!certEl) {
+        alert('Certificate not found. Please try again.');
+        return;
+    }
+
+    const btn = document.querySelector('#bonafideModal .btn-primary');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.textContent = '⏳ Generating PDF...';
+        btn.disabled = true;
+    }
+
+    try {
+        const canvas = await html2canvas(certEl, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false,
+            imageTimeout: 5000,
+            onclone: function(clonedDoc) {
+                const clonedCert = clonedDoc.querySelector('.bonafide-certificate');
+                if (clonedCert) {
+                    clonedCert.style.overflow = 'visible';
+                    clonedCert.style.maxWidth = 'none';
+                }
+            }
+        });
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pageWidth  = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const imgData     = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidthPx  = canvas.width;
+        const imgHeightPx = canvas.height;
+        const ratio       = pageWidth / imgWidthPx;
+        const imgHeightMm = imgHeightPx * ratio;
+
+        const yOffset = imgHeightMm < pageHeight
+            ? (pageHeight - imgHeightMm) / 2
+            : 0;
+
+        pdf.addImage(imgData, 'JPEG', 0, yOffset, pageWidth, imgHeightMm);
+        pdf.save('Bonafide_Certificate.pdf');
+
+    } catch (err) {
+        console.error('PDF generation error:', err);
+        alert('PDF generation failed. Please try again.');
+    } finally {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
     if (event.target === certificateModal) {
         closeModal();
+    }
+    if (event.target === bonafideModal) {
+        closeBonafideModal();
     }
     if (event.target === document.getElementById('editModal')) {
         closeEditModal();
@@ -776,9 +984,6 @@ window.onclick = function(event) {
 }
 
 // Edit student functionality
-const editModal = document.getElementById('editModal');
-const editForm = document.getElementById('editForm');
-
 function editStudent(id) {
     const student = students.find(s => s.id === id);
     if (!student) {
@@ -1201,10 +1406,13 @@ window.exportToCSV = exportToCSV;
 window.toggleNav = toggleNav;
 window.deleteStudent = deleteStudent;
 window.generateCertificate = generateCertificate;
+window.generateBonafide = generateBonafide;
 window.editStudent = editStudent;
 window.closeEditModal = closeEditModal;
 window.closeModal = closeModal;
+window.closeBonafideModal = closeBonafideModal;
 window.printCertificate = printCertificate;
+window.printBonafide = printBonafide;
 window.signInWithGoogle = signInWithGoogle;
 window.signOutUser = signOutUser;
 window.closeAuthModal = closeAuthModal;
