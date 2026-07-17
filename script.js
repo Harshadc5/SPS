@@ -702,6 +702,7 @@ async function deleteStudent(id) {
             await loadStudents();
         } else {
             showToast('❌ Error: Student not found!', 'error');
+        }
     } catch (error) {
         console.error('Error deleting student:', error);
         showToast('❌ Error deleting student from database. Check console for details.', 'error');
