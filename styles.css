@@ -1209,11 +1209,11 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
     }
 
     html, body {
-        width: 8.5in !important;
-        height: 11in !important;
+        width: 794px !important;
+        height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         background: white !important;
     }
 

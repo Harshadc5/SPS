@@ -691,9 +691,25 @@ function closeModal() {
 
 // Print certificate
 function printCertificate() {
-    const content = document.getElementById('certificateContent').innerHTML;
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
-    printWindow.document.write(`<!DOCTYPE html>
+    if (isMobileDevice()) {
+        // On mobile, window.open() is blocked by popup blocker.
+        // Instead, use window.print() directly on the page.
+        // The @media print CSS in styles.css will hide everything
+        // except the certificate modal and render it at A4 width.
+        window.print();
+    } else {
+        // Desktop: open a dedicated print window for clean output
+        const content = document.getElementById('certificateContent').innerHTML;
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+        const contentWithBase = content
+            .replace(/src="([^"]*images\/)/g, `src="${baseUrl}images/`);
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) {
+            // Popup was blocked even on desktop — fall back to direct print
+            window.print();
+            return;
+        }
+        printWindow.document.write(`<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -708,17 +724,12 @@ function printCertificate() {
             color-adjust: exact !important;
             box-sizing: border-box;
         }
-        /* Force A4 layout width always — this ensures all pixel margin-lefts
-           are computed relative to A4 paper width, not the device screen width.
-           Without this, on mobile the viewport is ~393px and margin-left:340px
-           causes content to overflow the right edge. */
         html {
             width: 210mm;
             min-width: 210mm;
             margin: 0;
             padding: 0;
             background: white;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
         }
         body {
             width: 210mm;
@@ -743,30 +754,17 @@ function printCertificate() {
         }
         strong { font-weight: 700; }
         img { max-height: 80px !important; max-width: 80px !important; }
-        @page {
-            size: A4 portrait;
-            margin: 8mm;
-        }
+        @page { size: A4 portrait; margin: 8mm; }
         @media print {
-            html, body {
-                width: 210mm !important;
-                height: auto !important;
-                overflow: hidden !important;
-            }
-            .certificate {
-                page-break-inside: avoid !important;
-                page-break-after: avoid !important;
-                page-break-before: avoid !important;
-                break-inside: avoid !important;
-            }
+            html, body { width: 210mm !important; height: auto !important; overflow: hidden !important; }
+            .certificate { page-break-inside: avoid !important; break-inside: avoid !important; }
         }
     </style>
 </head>
 <body>
-    ${content}
+    ${contentWithBase}
     <script>
         window.onload = function() {
-            // Wait for fonts to load then print
             setTimeout(function() {
                 window.print();
                 setTimeout(function() { window.close(); }, 500);
@@ -775,7 +773,8 @@ function printCertificate() {
     <\/script>
 </body>
 </html>`);
-    printWindow.document.close();
+        printWindow.document.close();
+    }
 }
 
 // Close modal when clicking outside
