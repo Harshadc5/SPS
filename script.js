@@ -697,7 +697,7 @@ function printCertificate() {
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=794, initial-scale=1.0, shrink-to-fit=no">
     <title>School Leaving Certificate</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
@@ -708,19 +708,30 @@ function printCertificate() {
             color-adjust: exact !important;
             box-sizing: border-box;
         }
-        html, body {
-            width: 100%;
+        /* Force A4 layout width always — this ensures all pixel margin-lefts
+           are computed relative to A4 paper width, not the device screen width.
+           Without this, on mobile the viewport is ~393px and margin-left:340px
+           causes content to overflow the right edge. */
+        html {
+            width: 210mm;
+            min-width: 210mm;
             margin: 0;
             padding: 0;
             background: white;
             font-family: 'Noto Sans Devanagari', Arial, sans-serif;
         }
         body {
-            display: block;
+            width: 210mm;
+            min-width: 210mm;
+            margin: 0;
+            padding: 0;
+            background: white;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            overflow-x: hidden;
         }
         .certificate {
             border: 3px solid #FF9A9E !important;
-            padding: 10mm !important;
+            padding: 8mm !important;
             margin: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
@@ -728,23 +739,25 @@ function printCertificate() {
             font-family: 'Noto Sans Devanagari', Arial, sans-serif;
             font-size: 10pt;
             line-height: 1.5;
+            overflow: hidden;
         }
         strong { font-weight: 700; }
-        img { max-height: 80px; max-width: 80px; }
+        img { max-height: 80px !important; max-width: 80px !important; }
         @page {
             size: A4 portrait;
             margin: 8mm;
         }
         @media print {
             html, body {
-                width: 210mm;
-                height: auto;
+                width: 210mm !important;
+                height: auto !important;
+                overflow: hidden !important;
             }
             .certificate {
-                width: 100% !important;
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 page-break-before: avoid !important;
+                break-inside: avoid !important;
             }
         }
     </style>
