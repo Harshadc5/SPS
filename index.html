@@ -453,15 +453,42 @@
         <div class="students-container">
             <h2>Enrolled Students</h2>
             <div class="search-box">
-                <input type="text" id="searchStudent" placeholder="Search by name or admission number..."
-                    onkeyup="filterStudents()">
-                <button class="btn btn-success" onclick="exportToCSV()" style="margin-top: 10px;">
-                    <i class="fas fa-file-excel"></i> Export to Excel
-                </button>
+                <input type="text" id="searchStudent" placeholder="Search by name or admission number..." onkeyup="filterStudents()">
+                <div class="bulk-action-bar">
+                    <label class="select-all-label">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Select All</span>
+                    </label>
+                    <button class="btn btn-danger btn-bulk-delete" onclick="deleteSelectedStudents()" style="display: none;" id="bulkDeleteBtn">
+                        <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                </div>
             </div>
             <div id="studentsList" class="students-list"></div>
         </div>
     </div>
+    </div>
+
+    <!-- Custom Confirm & Password Modal -->
+    <div id="customConfirmModal" class="modal custom-alert-modal">
+        <div class="modal-content custom-confirm-content">
+            <div class="confirm-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <p id="confirmMessage">Are you sure?</p>
+            <div id="passwordInputContainer" style="display: none; width: 100%;">
+                <input type="password" id="confirmPassword" placeholder="Enter Master Password..." class="custom-password-input">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for Leaving Certificate -->

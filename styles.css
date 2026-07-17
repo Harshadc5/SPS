@@ -539,11 +539,10 @@ h2 {
 .student-card {
     background: linear-gradient(135deg, #eff6ff, #dbeafe, #bfdbfe);
     border-radius: 15px;
-    padding: 25px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 20px;
-    align-items: center;
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     transition: all 0.3s ease;
     border: 2px solid #93c5fd;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
@@ -595,9 +594,11 @@ h2 {
 
 .student-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
-    min-width: 120px;
+    width: 100%;
+    margin-top: 5px;
 }
 
 @media (max-width: 768px) {
@@ -2411,4 +2412,150 @@ background: linear-gradient(135deg, #f8fafc, #e2e8f0, #c7d2fe);
 
 .custom-toast.success {
     background: #10b981;
+}
+
+/* Bulk Actions and Checkboxes */
+.bulk-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    background: #f1f5f9;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #475569;
+    user-select: none;
+    margin-right: auto;
+}
+
+.select-all-label input[type="checkbox"],
+.student-checkbox-wrapper input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #ef4444; /* Red to match delete intent */
+}
+
+.student-card {
+    position: relative;
+    padding-left: 50px !important; /* Make room for absolute checkbox */
+}
+
+.student-checkbox-wrapper {
+    position: absolute;
+    left: 15px;
+    top: 25px;
+    z-index: 5;
+}
+
+.btn-bulk-delete {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-bulk-delete:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 600px) {
+    .bulk-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .select-all-label {
+        margin-bottom: 10px;
+    }
+}
+
+/* Custom Alert & Confirm Modal */
+.custom-alert-modal {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px);
+    display: none;
+}
+
+.custom-confirm-content {
+    max-width: 400px;
+    margin: 15% auto;
+    text-align: center;
+    padding: 30px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-confirm-content .confirm-icon {
+    font-size: 40px;
+    color: #f59e0b; /* Warning color */
+    margin-bottom: 15px;
+}
+
+.custom-confirm-content h3 {
+    margin: 0 0 10px 0;
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.custom-confirm-content p {
+    color: #94a3b8;
+    margin: 0 0 20px 0;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.custom-password-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 16px;
+    margin-bottom: 5px;
+    transition: all 0.2s ease;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.custom-password-input:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.custom-confirm-content .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.custom-confirm-content .modal-actions .btn {
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 15px;
+    flex: 1;
 }

@@ -242,6 +242,10 @@ function displayStudents() {
     
     studentsList.innerHTML = sortedStudents.map(student => `
         <div class="student-card" data-id="${student.id}">
+            <label class="student-checkbox-wrapper">
+                <input type="checkbox" class="student-checkbox" value="${student.id}" onchange="updateBulkActionBtn()">
+                <span class="custom-checkbox"></span>
+            </label>
             <div class="student-info">
                 <div class="info-item">
                     <span class="label">Registration No.</span>
@@ -251,6 +255,9 @@ function displayStudents() {
                     <span class="label">Student Name</span>
                     <span class="value">${student.studentName}</span>
                 </div>
+                
+                <!-- Hidden details wrapper -->
+                <div id="extra-details-${student.id}" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding-top: 15px; margin-top: 5px; border-top: 1px dashed #93c5fd; width: 100%;">
                 <div class="info-item">
                     <span class="label">Date of Birth</span>
                     <span class="value">${formatDate(student.dob)}</span>
@@ -357,23 +364,177 @@ function displayStudents() {
                     <span class="value">${student.email}</span>
                 </div>
                 ` : ''}
+                </div>
+                <!-- End hidden details wrapper -->
             </div>
             <div class="student-actions">
-                <button class="btn btn-success" onclick="generateCertificate(${student.id})" style="margin-bottom: 5px;">
+                <button class="btn btn-secondary" onclick="toggleDetails('${student.id}')" id="toggle-btn-${student.id}" style="background: #64748b; color: white;">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-success" onclick="generateCertificate(${student.id})">
                     Generate LC
                 </button>
-                <button class="btn btn-info" onclick="generateBonafide(${student.id})" style="margin-bottom: 5px; background: #17a2b8; color: white;">
+                <button class="btn btn-info" onclick="generateBonafide(${student.id})" style="background: #17a2b8; color: white;">
                     Generate Bonafide
                 </button>
-                <button class="btn btn-primary" onclick="editStudent(${student.id})" style="margin-bottom: 5px;">
+                <button class="btn btn-primary" onclick="editStudent(${student.id})">
                     Edit
                 </button>
-                <button class="btn btn-danger" onclick="deleteStudent(${student.id})" style="margin-bottom: 5px;">
+                <button class="btn btn-danger" onclick="deleteStudent(${student.id})">
                     Delete
                 </button>
             </div>
         </div>
     `).join('');
+    
+    // Reset "Select All" checkbox state when list renders
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    updateBulkActionBtn();
+}
+
+// Toggle student details view
+window.toggleDetails = function(studentId) {
+    const detailsDiv = document.getElementById(`extra-details-${studentId}`);
+    const toggleBtn = document.getElementById(`toggle-btn-${studentId}`);
+    
+    if (detailsDiv.style.display === 'none') {
+        detailsDiv.style.display = 'grid';
+        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+        toggleBtn.style.background = '#475569';
+    } else {
+        detailsDiv.style.display = 'none';
+        toggleBtn.innerHTML = '<i class="fas fa-eye"></i> View';
+        toggleBtn.style.background = '#64748b';
+    }
+}
+
+// Global Master Deletion Password
+const MASTER_DELETE_PASSWORD = "SaravPath@99";
+
+// Handle Bulk Selection
+window.toggleSelectAll = function() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    
+    // Only select currently visible (filtered) checkboxes
+    const visibleCards = Array.from(document.querySelectorAll('.student-card')).filter(card => card.style.display !== 'none');
+    
+    visibleCards.forEach(card => {
+        const checkbox = card.querySelector('.student-checkbox');
+        if (checkbox) checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateBulkActionBtn();
+}
+
+window.updateBulkActionBtn = function() {
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+    const countSpan = document.getElementById('selectedCount');
+    
+    if (checkboxes.length > 0) {
+        bulkBtn.style.display = 'inline-flex';
+        countSpan.textContent = checkboxes.length;
+    } else {
+        bulkBtn.style.display = 'none';
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    }
+}
+
+// Custom Promise-based Confirm & Prompt Modal
+window.customConfirm = function(title, message, requirePassword = false) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const passContainer = document.getElementById('passwordInputContainer');
+        const passInput = document.getElementById('confirmPassword');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        
+        if (requirePassword) {
+            passContainer.style.display = 'block';
+            passInput.value = '';
+            setTimeout(() => passInput.focus(), 100);
+        } else {
+            passContainer.style.display = 'none';
+        }
+
+        modal.style.display = 'block';
+
+        const cleanup = () => {
+            modal.style.display = 'none';
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            passInput.onkeydown = null;
+        };
+
+        const handleConfirm = () => {
+            cleanup();
+            if (requirePassword) {
+                resolve(passInput.value);
+            } else {
+                resolve(true);
+            }
+        };
+
+        okBtn.onclick = handleConfirm;
+
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(false);
+        };
+        
+        passInput.onkeydown = (e) => {
+            if (e.key === 'Enter') handleConfirm();
+            if (e.key === 'Escape') cancelBtn.click();
+        };
+    });
+}
+
+// Bulk delete function
+window.deleteSelectedStudents = async function() {
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    const count = checkboxes.length;
+    
+    const password = await customConfirm(
+        'Bulk Delete',
+        `Are you sure you want to permanently delete ${count} selected student(s)?`,
+        true
+    );
+    
+    if (password === false) return; // Cancelled
+    
+    if (password !== MASTER_DELETE_PASSWORD) {
+        showToast('❌ Incorrect master password. Deletion cancelled.', 'error');
+        return;
+    }
+    
+    try {
+        let deletedCount = 0;
+        for (const checkbox of checkboxes) {
+            const id = parseInt(checkbox.value);
+            const studentToDelete = students.find(s => s.id === id);
+            if (studentToDelete && studentToDelete.firebaseKey) {
+                const studentRef = ref(database, `students/${studentToDelete.firebaseKey}`);
+                await remove(studentRef);
+                deletedCount++;
+            }
+        }
+        
+        showToast(`✅ Successfully deleted ${deletedCount} student(s)!`, 'success');
+        await loadStudents();
+    } catch (error) {
+        console.error('Error during bulk deletion:', error);
+        showToast('❌ Error deleting students. Check console for details.', 'error');
+    }
 }
 
 // Search/Filter students
@@ -519,20 +680,32 @@ window.addEventListener('click', function(e) {
 
 // Delete student
 async function deleteStudent(id) {
-    if (confirm('Are you sure you want to delete this student record?')) {
-        try {
-            const studentToDelete = students.find(s => s.id === id);
-            if (studentToDelete && studentToDelete.firebaseKey) {
-                const studentRef = ref(database, `students/${studentToDelete.firebaseKey}`);
-                await remove(studentRef);
-                await loadStudents();
-            } else {
-                alert('❌ Error: Student not found!');
-            }
-        } catch (error) {
-            console.error('Error deleting student:', error);
-            alert('❌ Error deleting student from database. Check console for details.');
+    const password = await customConfirm(
+        'Delete Student',
+        'Are you sure you want to permanently delete this student record? This action cannot be undone.',
+        true
+    );
+    
+    if (password === false) return; // Cancelled
+    
+    if (password !== MASTER_DELETE_PASSWORD) {
+        showToast('❌ Incorrect master password. Deletion cancelled.', 'error');
+        return;
+    }
+
+    try {
+        const studentToDelete = students.find(s => s.id === id);
+        if (studentToDelete && studentToDelete.firebaseKey) {
+            const studentRef = ref(database, `students/${studentToDelete.firebaseKey}`);
+            await remove(studentRef);
+            showToast('✅ Student deleted successfully!', 'success');
+            await loadStudents();
+        } else {
+            showToast('❌ Error: Student not found!', 'error');
         }
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        showToast('❌ Error deleting student from database. Check console for details.', 'error');
     }
 }
 
@@ -1426,3 +1599,23 @@ animatedElements.forEach(element => {
         observer.observe(element);
     }
 });
+
+// Toast Notification System
+window.showToast = function(message, type = 'success') {
+    let toast = document.getElementById('customToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'customToast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.className = `custom-toast ${type}`;
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
