@@ -709,6 +709,7 @@ function printCertificate() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=794, initial-scale=1.0, shrink-to-fit=no">
     <title>School Leaving Certificate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             -webkit-print-color-adjust: exact !important;
@@ -721,7 +722,7 @@ function printCertificate() {
             width: 210mm;
             min-width: 210mm;
             background: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
             overflow-x: hidden;
         }
         .certificate {
@@ -730,9 +731,9 @@ function printCertificate() {
             margin: 0 !important;
             width: 100% !important;
             background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%) !important;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.5;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
             overflow: hidden;
         }
         strong { font-weight: 700; }
@@ -763,14 +764,14 @@ function printCertificate() {
     // Create hidden iframe and inject certificate HTML
     const iframe = document.createElement('iframe');
     iframe.id = '_printFrame';
-    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;';
+    iframe.style.cssText = 'position:fixed;top:0;left:-820px;width:794px;height:1123px;border:none;visibility:hidden;';
     document.body.appendChild(iframe);
 
     iframe.contentDocument.open();
     iframe.contentDocument.write(certHTML);
     iframe.contentDocument.close();
 
-    // Wait for iframe content to fully render then print
+    // Wait for iframe content and fonts to fully load then print
     iframe.onload = function () {
         setTimeout(function () {
             try {
@@ -783,8 +784,8 @@ function printCertificate() {
             // Clean up iframe after print dialog closes
             setTimeout(function () {
                 if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-            }, 2000);
-        }, 600);
+            }, 3000);
+        }, 1500); // 1500ms to allow Noto Sans Devanagari font to load
     };
 }
 
