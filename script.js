@@ -508,11 +508,12 @@ function generateCertificate(id) {
     const admissionYear = new Date(student.admissionDate).getFullYear();
     const currentYear = new Date().getFullYear();
     
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
     const certificate = `
         <div class="certificate" style="padding: 20px; font-family: 'Noto Sans Devanagari', Arial, sans-serif; max-width: 100%; margin: 0 auto; box-sizing: border-box;">
             <div class="certificate-header">
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px;">
-                    <img src="images/logo.png" alt="School Logo" style="max-height: 90px; max-width: 90px;">
+                    <img src="${baseUrl}images/logo.png" alt="School Logo" style="max-height: 90px; max-width: 90px;">
                     <div style="text-align: center; flex: 1; margin: 0 15px;">
                         <p style="color: #8B0000; font-size: 13px; margin: 2px 0; font-weight: 600;">
                             महात्मा गांधी विद्यामंदिर शिक्षण संस्था,
@@ -534,7 +535,7 @@ function generateCertificate(id) {
                             <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.-</span></div>
                         </div>
                     </div>
-                    <img src="images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
+                    <img src="${baseUrl}images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
                 </div>
                 
                 <div style="text-align: center; margin: 15px 0; position: relative;">
@@ -690,7 +691,78 @@ function closeModal() {
 
 // Print certificate
 function printCertificate() {
-    window.print();
+    const content = document.getElementById('certificateContent').innerHTML;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Leaving Certificate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: white;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+        }
+        body {
+            display: block;
+        }
+        .certificate {
+            border: 3px solid #FF9A9E !important;
+            padding: 10mm !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%) !important;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
+        strong { font-weight: 700; }
+        img { max-height: 80px; max-width: 80px; }
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+        @media print {
+            html, body {
+                width: 210mm;
+                height: auto;
+            }
+            .certificate {
+                width: 100% !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    ${content}
+    <script>
+        window.onload = function() {
+            // Wait for fonts to load then print
+            setTimeout(function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+            }, 800);
+        };
+    <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
 }
 
 // Close modal when clicking outside
