@@ -689,104 +689,80 @@ function closeModal() {
     certificateModal.style.display = 'none';
 }
 
-// Print certificate - uses hidden iframe for fast preview on all devices
-// Avoids popup blocker (mobile) and slow full-page render (window.print directly)
-function printCertificate() {
-    const content = document.getElementById('certificateContent').innerHTML;
-    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+// Print certificate - generates PDF directly using html2canvas + jsPDF
+// No browser print dialog needed — works on all devices including mobile
+async function printCertificate() {
+    const certEl = document.querySelector('#certificateContent .certificate');
+    if (!certEl) {
+        alert('Certificate not found. Please try again.');
+        return;
+    }
 
-    // Fix relative image paths to absolute so they load inside the iframe
-    const contentWithBase = content.replace(/src="(?!http)([^"]+)"/g, (match, path) => {
-        if (path.startsWith('images/') || path.includes('/images/')) {
-            return `src="${baseUrl}${path.replace(/^\//, '')}"`;
-        }
-        return match;
-    });
+    // Show loading state on button
+    const btn = document.querySelector('#certificateModal .btn-primary');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.textContent = '⏳ Generating PDF...';
+        btn.disabled = true;
+    }
 
-    const certHTML = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=794, initial-scale=1.0, shrink-to-fit=no">
-    <title>School Leaving Certificate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            color-adjust: exact !important;
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-        }
-        html, body {
-            width: 210mm;
-            min-width: 210mm;
-            background: white;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
-            overflow-x: hidden;
-        }
-        .certificate {
-            border: 3px solid #FF9A9E !important;
-            padding: 8mm !important;
-            margin: 0 !important;
-            width: 100% !important;
-            background: linear-gradient(135deg, #FFFBF5 0%, #FFF9F0 100%) !important;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.6;
-            overflow: hidden;
-        }
-        strong { font-weight: 700; }
-        img { max-height: 80px !important; max-width: 80px !important; }
-        @page { size: A4 portrait; margin: 8mm; }
-        @media print {
-            html, body {
-                width: 210mm !important;
-                height: auto !important;
-                overflow: hidden !important;
+    try {
+        // Capture the certificate element as a canvas image
+        const canvas = await html2canvas(certEl, {
+            scale: 2,           // 2x resolution for crisp text
+            useCORS: true,      // allow cross-origin images (logos)
+            allowTaint: false,
+            backgroundColor: '#FFFBF5',
+            logging: false,
+            imageTimeout: 5000,
+            onclone: function(clonedDoc) {
+                // Ensure the cloned certificate is fully visible
+                const clonedCert = clonedDoc.querySelector('.certificate');
+                if (clonedCert) {
+                    clonedCert.style.overflow = 'visible';
+                    clonedCert.style.maxWidth = 'none';
+                }
             }
-            .certificate {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                page-break-after: avoid !important;
-                page-break-before: avoid !important;
-            }
+        });
+
+        // Create A4 PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pageWidth  = pdf.internal.pageSize.getWidth();   // 210mm
+        const pageHeight = pdf.internal.pageSize.getHeight();  // 297mm
+
+        // Scale the captured image to fill the full A4 page width
+        const imgData     = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidthPx  = canvas.width;
+        const imgHeightPx = canvas.height;
+        const ratio       = pageWidth / imgWidthPx;
+        const imgHeightMm = imgHeightPx * ratio;
+
+        // If certificate fits on one page, center it; otherwise let it fill
+        const yOffset = imgHeightMm < pageHeight
+            ? (pageHeight - imgHeightMm) / 2   // vertically centered
+            : 0;
+
+        pdf.addImage(imgData, 'JPEG', 0, yOffset, pageWidth, imgHeightMm);
+
+        // Trigger download
+        pdf.save('ShalaaSodlyachaDakhla.pdf');
+
+    } catch (err) {
+        console.error('PDF generation error:', err);
+        alert('PDF generation failed. Please try again.');
+    } finally {
+        // Restore button
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
         }
-    </style>
-</head>
-<body>${contentWithBase}</body>
-</html>`;
-
-    // Remove any existing print iframe
-    const existing = document.getElementById('_printFrame');
-    if (existing) existing.remove();
-
-    // Create hidden iframe and inject certificate HTML
-    const iframe = document.createElement('iframe');
-    iframe.id = '_printFrame';
-    iframe.style.cssText = 'position:fixed;top:0;left:-820px;width:794px;height:1123px;border:none;visibility:hidden;';
-    document.body.appendChild(iframe);
-
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(certHTML);
-    iframe.contentDocument.close();
-
-    // Wait for iframe content and fonts to fully load then print
-    iframe.onload = function () {
-        setTimeout(function () {
-            try {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-            } catch (e) {
-                // Fallback: direct page print
-                window.print();
-            }
-            // Clean up iframe after print dialog closes
-            setTimeout(function () {
-                if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-            }, 3000);
-        }, 1500); // 1500ms to allow Noto Sans Devanagari font to load
-    };
+    }
 }
 
 // Close modal when clicking outside
