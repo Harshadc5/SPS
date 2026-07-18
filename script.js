@@ -772,9 +772,9 @@ function generateCertificate(id) {
                 
                 <p style="margin: 8px 0;">९) राज्य : महाराष्ट्र <span style="margin-left: 120px;">१०) देश : भारत</span></p>
                 
-                <p style="margin: 8px 0;">११) जन्म दिनांक अक्षरी - <strong>${formatDateInWords(student.dob)}</strong></p>
+                <p style="margin: 8px 0;">११) जन्म दिनांक अंकी - <strong>${formatDate(student.dob)}</strong></p>
                 
-                <p style="margin: 8px 0;">१२) जन्म दिनांक अंकी - <strong>${formatDate(student.dob)}</strong></p>
+                <p style="margin: 8px 0;">१२) जन्म दिनांक अक्षरी - <strong>${formatDateInWords(student.dob)}</strong></p>
                 
                 <p style="margin: 8px 0;">१३) या पूर्वी शिकून आलेल्या शाळेचे नाव - <strong>${student.previousSchool || 'लागू नाही'}</strong></p>
                 
