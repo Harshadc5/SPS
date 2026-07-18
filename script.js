@@ -565,8 +565,8 @@ function exportToCSV() {
         'जन्मतारीख',
         'लिंग',
         'जन्मस्थळ',
-        'जन्मस्थळ (तालुका)',
-        'जन्मस्थळ (जिल्हा)',
+        'तालुका',
+        'जिल्हा',
         'आधार क्रमांक',
         'वडिलांचे नाव',
         'आईचे नाव',
@@ -580,7 +580,7 @@ function exportToCSV() {
         'दाखल तारीख',
         'मागील शाळेचे नाव',
         'अभ्यासातील प्रगती',
-        'वागणूक',
+        'वर्तणूक',
         'मागील शाळा सोडण्याचे कारण',
         'पत्ता',
         'फोन नंबर',
@@ -798,7 +798,7 @@ function generateCertificate(id) {
             <div class="certificate-footer" style="display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #000; padding-top: 20px;">
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
-                    <div style="font-weight: bold;">लिपीक</div>
+                    <div style="font-weight: bold;">लिपीक/ता.क</div>
                 </div>
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
@@ -893,7 +893,7 @@ function generateBonafide(id) {
             <div class="bonafide-footer" style="display: flex; justify-content: space-between; margin-top: 80px; padding: 0 40px; position: relative; z-index: 2;">
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
-                    <div style="font-weight: bold; font-size: 18px;">लिपीक</div>
+                    <div style="font-weight: bold; font-size: 18px;">लिपीक/ता.क</div>
                 </div>
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
