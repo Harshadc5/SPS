@@ -89,6 +89,7 @@ admissionForm.addEventListener('submit', async function (e) {
     const formData = new FormData(admissionForm);
     const student = {
         id: Date.now(),
+        studentPenId: formData.get('studentPenId'),
         registrationNo: formData.get('registrationNo'),
         studentName: formData.get('studentName'),
         fatherName: formData.get('fatherName'),
@@ -111,6 +112,7 @@ admissionForm.addEventListener('submit', async function (e) {
         motherTongue: formData.get('motherTongue'),
         progressInStudy: formData.get('progressInStudy'),
         behaviour: formData.get('behaviour'),
+        dakhlaNo: formData.get('dakhlaNo'),
         reasonForLeaving: formData.get('reasonForLeaving'),
         address: formData.get('address'),
         phone: formData.get('phone'),
@@ -1241,6 +1243,7 @@ editForm.addEventListener('submit', async function (e) {
     // Update student data
     const updatedStudent = {
         id: studentData.id,
+        studentPenId: formData.get('studentPenId'),
         registrationNo: formData.get('registrationNo'),
         studentName: formData.get('studentName'),
         fatherName: formData.get('fatherName'),
@@ -1263,6 +1266,7 @@ editForm.addEventListener('submit', async function (e) {
         motherTongue: formData.get('motherTongue'),
         progressInStudy: formData.get('progressInStudy'),
         behaviour: formData.get('behaviour'),
+        dakhlaNo: formData.get('dakhlaNo'),
         reasonForLeaving: formData.get('reasonForLeaving'),
         address: formData.get('address'),
         phone: formData.get('phone'),
