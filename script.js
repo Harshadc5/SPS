@@ -201,6 +201,7 @@ function setNextRegistrationNumber() {
 
 // Display all students
 function displayStudents() {
+    try {
     if (students.length === 0) {
         studentsList.innerHTML = `
             <div class="empty-state">
@@ -397,6 +398,10 @@ function displayStudents() {
     const bulkActionBar = document.querySelector('.bulk-action-bar');
     if (bulkActionBar) {
         bulkActionBar.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
+    }
+    } catch(err) {
+        console.error("Display Students Error:", err);
+        alert("Display Students Error: " + err.message + "\nLine: " + err.stack);
     }
 }
 
