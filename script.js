@@ -213,8 +213,8 @@ function displayStudents() {
 
     // Sort students by registration number in ascending order
     const sortedStudents = [...students].sort((a, b) => {
-        const regA = a.registrationNo.toString();
-        const regB = b.registrationNo.toString();
+        const regA = (a.registrationNo || '').toString();
+        const regB = (b.registrationNo || '').toString();
 
         // Try to parse as numbers first
         const numA = parseInt(regA);
@@ -252,6 +252,14 @@ function displayStudents() {
                 <div class="info-item">
                     <span class="label">Date of Birth</span>
                     <span class="value">${formatDate(student.dob)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Student ID/PEN/APAAR</span>
+                    <span class="value">${student.studentPenId || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Dakhla No.</span>
+                    <span class="value">${student.dakhlaNo || 'N/A'}</span>
                 </div>
                 <div class="info-item">
                     <span class="label">Gender</span>
@@ -591,8 +599,8 @@ function exportToCSV() {
 
     // Sort students by registration number in ascending order
     const sortedStudents = [...students].sort((a, b) => {
-        const regA = a.registrationNo.toString();
-        const regB = b.registrationNo.toString();
+        const regA = (a.registrationNo || '').toString();
+        const regB = (b.registrationNo || '').toString();
 
         // Try to parse as numbers first
         const numA = parseInt(regA);
