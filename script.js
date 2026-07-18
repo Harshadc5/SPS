@@ -204,35 +204,35 @@ function setNextRegistrationNumber() {
 // Display all students
 function displayStudents() {
     try {
-    if (students.length === 0) {
-        studentsList.innerHTML = `
+        if (students.length === 0) {
+            studentsList.innerHTML = `
             <div class="empty-state">
                 <h3>No Students Enrolled Yet</h3>
                 <p>Add students using the admission form</p>
             </div>
         `;
-        return;
-    }
-
-    // Sort students by registration number in ascending order
-    const sortedStudents = [...students].sort((a, b) => {
-        const regA = (a.registrationNo || '').toString();
-        const regB = (b.registrationNo || '').toString();
-
-        // Try to parse as numbers first
-        const numA = parseInt(regA);
-        const numB = parseInt(regB);
-
-        // If both are valid numbers, compare numerically
-        if (!isNaN(numA) && !isNaN(numB)) {
-            return numA - numB;
+            return;
         }
 
-        // Otherwise, compare as strings
-        return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
-    });
+        // Sort students by registration number in ascending order
+        const sortedStudents = [...students].sort((a, b) => {
+            const regA = (a.registrationNo || '').toString();
+            const regB = (b.registrationNo || '').toString();
 
-    studentsList.innerHTML = sortedStudents.map(student => `
+            // Try to parse as numbers first
+            const numA = parseInt(regA);
+            const numB = parseInt(regB);
+
+            // If both are valid numbers, compare numerically
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return numA - numB;
+            }
+
+            // Otherwise, compare as strings
+            return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        studentsList.innerHTML = sortedStudents.map(student => `
         <div class="student-card" data-id="${student.id}">
             ${currentUserRole === 'admin' ? `
             <label class="student-checkbox-wrapper">
@@ -391,17 +391,17 @@ function displayStudents() {
         </div>
     `).join('');
 
-    // Reset "Select All" checkbox state when list renders
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    if (selectAllCheckbox) selectAllCheckbox.checked = false;
-    updateBulkActionBtn();
+        // Reset "Select All" checkbox state when list renders
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        updateBulkActionBtn();
 
-    // Hide bulk action bar for staff
-    const bulkActionBar = document.querySelector('.bulk-action-bar');
-    if (bulkActionBar) {
-        bulkActionBar.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
-    }
-    } catch(err) {
+        // Hide bulk action bar for staff
+        const bulkActionBar = document.querySelector('.bulk-action-bar');
+        if (bulkActionBar) {
+            bulkActionBar.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
+        }
+    } catch (err) {
         console.error("Display Students Error:", err);
         alert("Display Students Error: " + err.message + "\nLine: " + err.stack);
     }
@@ -575,7 +575,7 @@ function exportToCSV() {
 
     // Define CSV headers
     const headers = [
-        'स्टुडंट आय. डी.',
+        'विद्यार्थी आयडी/पेन/आपार आयडी.',
         'रजिस्टर नं.',
         'विद्यार्थ्याचे नाव',
         'जन्मतारीख',
@@ -777,9 +777,9 @@ function generateCertificate(id) {
             </div>
             
             <div class="certificate-body" style="font-size: 13px; line-height: 1.8;">
-                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">स्टुडंट आय. डी. - <strong>${student.studentPenId || ''}</strong> <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
+                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">विद्यार्थी आयडी/पेन/आपार आयडी. - <strong>${student.studentPenId || ''}</strong> <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
                 
-                <p style="margin: 8px 0;">१) विद्यार्थीचे संपूर्ण नाव - <strong>${student.studentName}</strong> (वडीलांचे नाव) <strong>${student.fatherName}</strong> (आडनाव) <strong>${student.lastName || ''}</strong></p>
+                <p style="margin: 8px 0;">१) विद्यार्थीचे संपूर्ण नाव - <strong>${student.studentName}</strong> <span style="margin-left: 40px;">(वडीलांचे नाव) <strong>${student.fatherName}</strong></span> <span style="margin-left: 40px;">(आडनाव) <strong>${student.lastName || ''}</strong></span></p>
                 
                 <p style="margin: 8px 0;">२) आईचे नाव - <strong>${student.motherName}</strong></p>
                 
