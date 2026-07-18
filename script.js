@@ -762,7 +762,7 @@ function generateCertificate(id) {
                         </p>
                         <div style="text-align: left; font-size: 13px; margin: 2px 0; line-height: 1.4;">
                             <div style="color: #8B0000;">● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - <span style="margin-left: 140px;">● यु. डायस क्र.- 27201700209</span></div>
-                            <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.- <strong>${student.registrationNo || ''}</strong></span></div>
+                            <div style="color: #000000;">दाखला क्र.- <strong>${student.dakhlaNo || ''}</strong> <span style="margin-left: 280px;">जनरल रजि.क्र.- <strong>${student.registrationNo || ''}</strong></span></div>
                         </div>
                     </div>
                     <img src="${baseUrl}images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
