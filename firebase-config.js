@@ -50,7 +50,10 @@ const ADMIN_EMAILS = [
 const STAFF_EMAILS = [
   // Add authorized staff emails below:
   'harshaddc89@gmail.com',
-  'omkal456@gmail.com'
+  'omkal456@gmail.com',
+  'vdnikam19@gmail.com',
+  'seema27101983@gmail.com'
+
   // 'staff1@gmail.com',
 ];
 
