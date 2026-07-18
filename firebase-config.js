@@ -32,18 +32,27 @@ const googleProvider = new GoogleAuthProvider();
 
 // Configure Google Provider for better mobile support
 googleProvider.setCustomParameters({
-    prompt: 'select_account',  // Force account selection
-    display: 'popup'
+  prompt: 'select_account',  // Force account selection
+  display: 'popup'
 });
 
 // Admin whitelist - Add authorized email addresses here
 const ADMIN_EMAILS = [
-    'dmchaudhari76@gmail.com',
-    'instamine9@gmail.com'  // Replace with your Gmail address
-    // Add more authorized emails below:
-    // 'another-admin@gmail.com',
-    // 'third-admin@gmail.com',
+  'dmchaudhari76@gmail.com',
+  'instamine9@gmail.com'
+  // Replace with your Gmail address
+  // Add more authorized emails below:
+  // 'another-admin@gmail.com',
+  // 'third-admin@gmail.com',
+];
+
+// Staff whitelist - Add authorized staff email addresses here
+const STAFF_EMAILS = [
+  // Add authorized staff emails below:
+  'harshaddc89@gmail.com',
+  'omkal456@gmail.com'
+  // 'staff1@gmail.com',
 ];
 
 // Export database functions and auth
-export { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS };
+export { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS, STAFF_EMAILS };

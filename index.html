@@ -101,7 +101,7 @@
                     </svg>
                 </div>
                 <div class="user-info">
-                    <span class="user-label">Admin</span>
+                    <span id="userRoleDisplay" class="user-label">Role</span>
                     <span id="displayUserEmail" class="user-email"></span>
                 </div>
             </div>
@@ -115,8 +115,12 @@
         </div>
 
         <br>
-        <div class="cta-buttons">
-            <button class="btn btn-primary btn-large" onclick="showTab('admission')">Add New Student</button>
+        <div id="loginButtons" class="cta-buttons" style="gap: 30px;">
+            <button class="btn btn-primary btn-large" style="margin-right: 30px;" onclick="openAuthModal('admin')">Admin Login</button>
+            <button class="btn btn-secondary btn-large" onclick="openAuthModal('staff')">Staff Login</button>
+        </div>
+        <div id="dashboardButtons" class="cta-buttons" style="display: none; gap: 30px;">
+            <button class="btn btn-primary btn-large" style="margin-right: 30px;" onclick="showTab('admission')">Add New Student</button>
             <button class="btn btn-secondary btn-large" onclick="showTab('students')">View All Students</button>
         </div>
     </div>
@@ -241,7 +245,7 @@
                     <h3 style="color: #333D4E;">Personal Information </h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="registrationNo">Registration Number *</label>
+                            <label for="registrationNo">General Register No. *</label>
                             <input type="text" id="registrationNo" name="registrationNo" required>
                         </div>
                         <div class="form-group">
@@ -316,25 +320,18 @@
                             <label for="religion">Religion *</label>
                             <select id="religion" name="religion" required>
                                 <option value="">Select Religion</option>
-                                <option value="Hindu">Hindu</option>
-                                <option value="Muslim">Muslim</option>
-                                <option value="Christian">Christian</option>
-                                <option value="Sikh">Sikh</option>
-                                <option value="Buddhist">Buddhist</option>
-                                <option value="Jain">Jain</option>
-                                <option value="Other">Other</option>
+                                <option value="हिंदू">हिंदू</option>
+                                <option value="मुस्लिम">मुस्लिम</option>
+                                <option value="ख्रिश्चन">ख्रिश्चन</option>
+                                <option value="सिख">सिख</option>
+                                <option value="बौद्ध">बौद्ध</option>
+                                <option value="जैन">जैन</option>
+                                <option value="इतर">इतर</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="caste">Caste *</label>
-                            <select id="caste" name="caste" required>
-                                <option value="">Select Caste</option>
-                                <option value="General">General</option>
-                                <option value="OBC">OBC</option>
-                                <option value="SC">SC</option>
-                                <option value="ST">ST</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <input type="text" id="caste" name="caste" placeholder="Enter Caste" required>
                         </div>
                     </div>
 
@@ -390,22 +387,16 @@
                             <label for="progressInStudy">Progress in Study *</label>
                             <select id="progressInStudy" name="progressInStudy" required>
                                 <option value="">Select Progress</option>
-                                <option value="Excellent">Excellent</option>
-                                <option value="Very Good">Very Good</option>
-                                <option value="Good">Good</option>
-                                <option value="Satisfactory">Satisfactory</option>
-                                <option value="Needs Improvement">Needs Improvement</option>
+                                <option value="चांगली">चांगली</option>
+                                <option value="बरी">बरी</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="behaviour">Behaviour *</label>
                             <select id="behaviour" name="behaviour" required>
                                 <option value="">Select Behaviour</option>
-                                <option value="Excellent">Excellent</option>
-                                <option value="Very Good">Very Good</option>
-                                <option value="Good">Good</option>
-                                <option value="Satisfactory">Satisfactory</option>
-                                <option value="Needs Improvement">Needs Improvement</option>
+                                <option value="चांगली">चांगली</option>
+                                <option value="बरी">बरी</option>
                             </select>
                         </div>
                     </div>
@@ -453,14 +444,16 @@
         <div class="students-container">
             <h2>Enrolled Students</h2>
             <div class="search-box">
-                <input type="text" id="searchStudent" placeholder="Search by name or admission number..." onkeyup="filterStudents()">
+                <input type="text" id="searchStudent" placeholder="Search by name or admission number..."
+                    onkeyup="filterStudents()">
                 <div class="bulk-action-bar">
                     <label class="select-all-label">
                         <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
                         <span class="custom-checkbox"></span>
                         <span class="label-text">Select All</span>
                     </label>
-                    <button class="btn btn-danger btn-bulk-delete" onclick="deleteSelectedStudents()" style="display: none;" id="bulkDeleteBtn">
+                    <button class="btn btn-danger btn-bulk-delete" onclick="deleteSelectedStudents()"
+                        style="display: none;" id="bulkDeleteBtn">
                         <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
                     </button>
                     <button class="btn btn-success" onclick="exportToCSV()">
@@ -482,7 +475,8 @@
             <h3 id="confirmTitle">Confirm Action</h3>
             <p id="confirmMessage">Are you sure?</p>
             <div id="passwordInputContainer" style="display: none; width: 100%;">
-                <input type="password" id="confirmPassword" placeholder="Enter Master Password..." class="custom-password-input">
+                <input type="password" id="confirmPassword" placeholder="Enter Master Password..."
+                    class="custom-password-input">
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
@@ -526,7 +520,7 @@
                         <h3 style="color: #333D4E;">Personal Information</h3>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="editRegistrationNo">Registration Number *</label>
+                                <label for="editRegistrationNo">General Register No. *</label>
                                 <input type="text" id="editRegistrationNo" name="registrationNo" required>
                             </div>
                             <div class="form-group">
@@ -601,25 +595,18 @@
                                 <label for="editReligion">Religion *</label>
                                 <select id="editReligion" name="religion" required>
                                     <option value="">Select Religion</option>
-                                    <option value="Hindu">Hindu</option>
-                                    <option value="Muslim">Muslim</option>
-                                    <option value="Christian">Christian</option>
-                                    <option value="Sikh">Sikh</option>
-                                    <option value="Buddhist">Buddhist</option>
-                                    <option value="Jain">Jain</option>
-                                    <option value="Other">Other</option>
+                                    <option value="हिंदू">हिंदू</option>
+                                    <option value="मुस्लिम">मुस्लिम</option>
+                                    <option value="ख्रिश्चन">ख्रिश्चन</option>
+                                    <option value="सिख">सिख</option>
+                                    <option value="बौद्ध">बौद्ध</option>
+                                    <option value="जैन">जैन</option>
+                                    <option value="इतर">इतर</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="editCaste">Caste *</label>
-                                <select id="editCaste" name="caste" required>
-                                    <option value="">Select Caste</option>
-                                    <option value="General">General</option>
-                                    <option value="OBC">OBC</option>
-                                    <option value="SC">SC</option>
-                                    <option value="ST">ST</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                <input type="text" id="editCaste" name="caste" placeholder="Enter Caste" required>
                             </div>
                         </div>
 
@@ -674,22 +661,16 @@
                                 <label for="editProgressInStudy">Progress in Study *</label>
                                 <select id="editProgressInStudy" name="progressInStudy" required>
                                     <option value="">Select Progress</option>
-                                    <option value="Excellent">Excellent</option>
-                                    <option value="Very Good">Very Good</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Satisfactory">Satisfactory</option>
-                                    <option value="Needs Improvement">Needs Improvement</option>
+                                    <option value="चांगली">चांगली</option>
+                                    <option value="बरी">बरी</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="editBehaviour">Behaviour *</label>
                                 <select id="editBehaviour" name="behaviour" required>
                                     <option value="">Select Behaviour</option>
-                                    <option value="Excellent">Excellent</option>
-                                    <option value="Very Good">Very Good</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Satisfactory">Satisfactory</option>
-                                    <option value="Needs Improvement">Needs Improvement</option>
+                                    <option value="चांगली">चांगली</option>
+                                    <option value="बरी">बरी</option>
                                 </select>
                             </div>
                         </div>

@@ -1,31 +1,31 @@
 // Import Firebase modules
-import { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS } from './firebase-config.js';
+import { database, ref, set, get, push, remove, update, child, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, ADMIN_EMAILS, STAFF_EMAILS } from './firebase-config.js';
 
 // Authentication state
 let currentUser = null;
-let isAdmin = false;
+let currentUserRole = null; // 'admin' or 'staff'
 
 // Override native alert with beautiful custom toast
-window.alert = function(message) {
+window.alert = function (message) {
     // Remove existing toast if any
     const existing = document.querySelector('.custom-toast');
     if (existing) existing.remove();
 
     // Determine type (success or error) based on emojis in message
     const isError = message.includes('❌') || message.includes('Error') || message.toLowerCase().includes('failed');
-    
+
     // Clean up emojis from message for cleaner display
     const cleanMsg = message.replace('✅ ', '').replace('❌ ', '').replace('?', '').trim();
 
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `custom-toast ${isError ? 'error' : 'success'}`;
-    
+
     // Add icon based on type
-    const icon = isError ? 
-        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>' : 
+    const icon = isError ?
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>' :
         '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-    
+
     toast.innerHTML = `${icon} <span>${cleanMsg}</span>`;
     document.body.appendChild(toast);
 
@@ -41,8 +41,8 @@ window.alert = function(message) {
 
 // Detect if user is on mobile device
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-           (window.innerWidth <= 768);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (window.innerWidth <= 768);
 }
 
 // Initialize students array
@@ -63,7 +63,7 @@ async function loadStudents() {
     try {
         const studentsRef = ref(database, 'students');
         const snapshot = await get(studentsRef);
-        
+
         if (snapshot.exists()) {
             const data = snapshot.val();
             students = Object.keys(data).map(key => ({
@@ -83,9 +83,9 @@ async function loadStudents() {
 }
 
 // Form submission handler
-admissionForm.addEventListener('submit', async function(e) {
+admissionForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData(admissionForm);
     const student = {
         id: Date.now(),
@@ -117,26 +117,26 @@ admissionForm.addEventListener('submit', async function(e) {
         email: formData.get('email'),
         dateAdded: new Date().toISOString()
     };
-    
+
     // Check if registration number already exists
     const existingStudent = students.find(s => s.registrationNo === student.registrationNo);
     if (existingStudent) {
         alert('❌ A student with this registration number already exists!');
         return;
     }
-    
+
     // Save to Firebase
     try {
         const studentsRef = ref(database, 'students');
         const newStudentRef = push(studentsRef);
         await set(newStudentRef, student);
-        
+
         // Show success message
         alert('✅ Student admission saved successfully!');
-        
+
         // Reset form
         admissionForm.reset();
-        
+
         // Reload students and switch to students tab
         await loadStudents();
         showTab('students');
@@ -147,7 +147,7 @@ admissionForm.addEventListener('submit', async function(e) {
 });
 
 // Form reset handler - auto-fill registration number after clearing
-admissionForm.addEventListener('reset', function(e) {
+admissionForm.addEventListener('reset', function (e) {
     // Use setTimeout to ensure form is cleared before setting new value
     setTimeout(() => {
         setNextRegistrationNumber();
@@ -157,9 +157,8 @@ admissionForm.addEventListener('reset', function(e) {
 // Tab switching
 function showTab(tabName) {
     // Check if authentication is required
-    if ((tabName === 'admission' || tabName === 'students') && !isAdmin) {
-        // Show authentication modal
-        openAuthModal(tabName);
+    if ((tabName === 'admission' || tabName === 'students') && !currentUserRole) {
+        alert("Please login first to access this section.");
         return;
     }
 
@@ -193,21 +192,11 @@ function showTab(tabName) {
     }
 }
 
-// Auto-fill next registration number
+// Auto-fill disabled as per user request
 function setNextRegistrationNumber() {
     const regNoInput = document.getElementById('registrationNo');
     if (!regNoInput) return;
-    
-    // Don't auto-fill if user has already entered a value
-    if (regNoInput.value && regNoInput.value.trim() !== '') return;
-    
-    // Always use sequential numbering starting from 1
-    // Next registration number = total students + 1
-    const nextRegNo = students.length + 1;
-    regNoInput.value = nextRegNo.toString();
-    
-    // Make it readonly but allow manual change if needed
-    regNoInput.setAttribute('placeholder', 'Auto-generated: ' + regNoInput.value);
+    regNoInput.removeAttribute('placeholder');
 }
 
 // Display all students
@@ -221,31 +210,33 @@ function displayStudents() {
         `;
         return;
     }
-    
+
     // Sort students by registration number in ascending order
     const sortedStudents = [...students].sort((a, b) => {
         const regA = a.registrationNo.toString();
         const regB = b.registrationNo.toString();
-        
+
         // Try to parse as numbers first
         const numA = parseInt(regA);
         const numB = parseInt(regB);
-        
+
         // If both are valid numbers, compare numerically
         if (!isNaN(numA) && !isNaN(numB)) {
             return numA - numB;
         }
-        
+
         // Otherwise, compare as strings
         return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
     });
-    
+
     studentsList.innerHTML = sortedStudents.map(student => `
         <div class="student-card" data-id="${student.id}">
+            ${currentUserRole === 'admin' ? `
             <label class="student-checkbox-wrapper">
                 <input type="checkbox" class="student-checkbox" value="${student.id}" onchange="updateBulkActionBtn()">
                 <span class="custom-checkbox"></span>
             </label>
+            ` : ''}
             <div class="student-info">
                 <div class="info-item">
                     <span class="label">Registration No.</span>
@@ -371,6 +362,7 @@ function displayStudents() {
                 <button class="btn btn-secondary" onclick="toggleDetails('${student.id}')" id="toggle-btn-${student.id}" style="background: #64748b; color: white;">
                     <i class="fas fa-eye"></i> View
                 </button>
+                ${currentUserRole === 'admin' ? `
                 <button class="btn btn-success" onclick="generateCertificate(${student.id})">
                     Generate LC
                 </button>
@@ -383,21 +375,28 @@ function displayStudents() {
                 <button class="btn btn-danger" onclick="deleteStudent(${student.id})">
                     Delete
                 </button>
+                ` : ''}
             </div>
         </div>
     `).join('');
-    
+
     // Reset "Select All" checkbox state when list renders
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
     updateBulkActionBtn();
+    
+    // Hide bulk action bar for staff
+    const bulkActionBar = document.querySelector('.bulk-action-bar');
+    if (bulkActionBar) {
+        bulkActionBar.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
+    }
 }
 
 // Toggle student details view
-window.toggleDetails = function(studentId) {
+window.toggleDetails = function (studentId) {
     const detailsDiv = document.getElementById(`extra-details-${studentId}`);
     const toggleBtn = document.getElementById(`toggle-btn-${studentId}`);
-    
+
     if (detailsDiv.style.display === 'none') {
         detailsDiv.style.display = 'grid';
         toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
@@ -413,26 +412,26 @@ window.toggleDetails = function(studentId) {
 const MASTER_DELETE_PASSWORD = "SaravPath@99";
 
 // Handle Bulk Selection
-window.toggleSelectAll = function() {
+window.toggleSelectAll = function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const checkboxes = document.querySelectorAll('.student-checkbox');
-    
+
     // Only select currently visible (filtered) checkboxes
     const visibleCards = Array.from(document.querySelectorAll('.student-card')).filter(card => card.style.display !== 'none');
-    
+
     visibleCards.forEach(card => {
         const checkbox = card.querySelector('.student-checkbox');
         if (checkbox) checkbox.checked = selectAllCheckbox.checked;
     });
-    
+
     updateBulkActionBtn();
 }
 
-window.updateBulkActionBtn = function() {
+window.updateBulkActionBtn = function () {
     const checkboxes = document.querySelectorAll('.student-checkbox:checked');
     const bulkBtn = document.getElementById('bulkDeleteBtn');
     const countSpan = document.getElementById('selectedCount');
-    
+
     if (checkboxes.length > 0) {
         bulkBtn.style.display = 'inline-flex';
         countSpan.textContent = checkboxes.length;
@@ -444,7 +443,7 @@ window.updateBulkActionBtn = function() {
 }
 
 // Custom Promise-based Confirm & Prompt Modal
-window.customConfirm = function(title, message, requirePassword = false) {
+window.customConfirm = function (title, message, requirePassword = false) {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const titleEl = document.getElementById('confirmTitle');
@@ -456,7 +455,7 @@ window.customConfirm = function(title, message, requirePassword = false) {
 
         titleEl.textContent = title;
         msgEl.textContent = message;
-        
+
         if (requirePassword) {
             passContainer.style.display = 'block';
             passInput.value = '';
@@ -489,7 +488,7 @@ window.customConfirm = function(title, message, requirePassword = false) {
             cleanup();
             resolve(false);
         };
-        
+
         passInput.onkeydown = (e) => {
             if (e.key === 'Enter') handleConfirm();
             if (e.key === 'Escape') cancelBtn.click();
@@ -498,25 +497,25 @@ window.customConfirm = function(title, message, requirePassword = false) {
 }
 
 // Bulk delete function
-window.deleteSelectedStudents = async function() {
+window.deleteSelectedStudents = async function () {
     const checkboxes = document.querySelectorAll('.student-checkbox:checked');
     if (checkboxes.length === 0) return;
-    
+
     const count = checkboxes.length;
-    
+
     const password = await customConfirm(
         'Bulk Delete',
         `Are you sure you want to permanently delete ${count} selected student(s)?`,
         true
     );
-    
+
     if (password === false) return; // Cancelled
-    
+
     if (password !== MASTER_DELETE_PASSWORD) {
         showToast('❌ Incorrect master password. Deletion cancelled.', 'error');
         return;
     }
-    
+
     try {
         let deletedCount = 0;
         for (const checkbox of checkboxes) {
@@ -528,7 +527,7 @@ window.deleteSelectedStudents = async function() {
                 deletedCount++;
             }
         }
-        
+
         showToast(`✅ Successfully deleted ${deletedCount} student(s)!`, 'success');
         await loadStudents();
     } catch (error) {
@@ -541,7 +540,7 @@ window.deleteSelectedStudents = async function() {
 function filterStudents() {
     const searchTerm = document.getElementById('searchStudent').value.toLowerCase();
     const studentCards = document.querySelectorAll('.student-card');
-    
+
     studentCards.forEach(card => {
         const text = card.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
@@ -593,16 +592,16 @@ function exportToCSV() {
     const sortedStudents = [...students].sort((a, b) => {
         const regA = a.registrationNo.toString();
         const regB = b.registrationNo.toString();
-        
+
         // Try to parse as numbers first
         const numA = parseInt(regA);
         const numB = parseInt(regB);
-        
+
         // If both are valid numbers, compare numerically
         if (!isNaN(numA) && !isNaN(numB)) {
             return numA - numB;
         }
-        
+
         // Otherwise, compare as strings
         return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' });
     });
@@ -650,12 +649,12 @@ function exportToCSV() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     const today = new Date().toISOString().split('T')[0];
     link.setAttribute('href', url);
     link.setAttribute('download', `students_export_${today}.csv`);
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -670,7 +669,7 @@ function toggleNav() {
 }
 
 // Close mobile nav when clicking outside
-window.addEventListener('click', function(e) {
+window.addEventListener('click', function (e) {
     const nav = document.querySelector('.main-nav');
     if (!nav) return;
     if (!nav.contains(e.target) && nav.classList.contains('open')) {
@@ -685,9 +684,9 @@ async function deleteStudent(id) {
         'Are you sure you want to permanently delete this student record? This action cannot be undone.',
         true
     );
-    
+
     if (password === false) return; // Cancelled
-    
+
     if (password !== MASTER_DELETE_PASSWORD) {
         showToast('❌ Incorrect master password. Deletion cancelled.', 'error');
         return;
@@ -716,12 +715,12 @@ function generateCertificate(id) {
         alert('❌ Student not found!');
         return;
     }
-    
+
     // Calculate age
     const age = calculateAge(student.dob);
     const admissionYear = new Date(student.admissionDate).getFullYear();
     const currentYear = new Date().getFullYear();
-    
+
     const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
     const certificate = `
         <div class="certificate" style="padding: 20px; font-family: 'Noto Sans Devanagari', Arial, sans-serif; max-width: 100%; margin: 0 auto; box-sizing: border-box;">
@@ -745,8 +744,8 @@ function generateCertificate(id) {
                             फोन नं.- <span style="margin-left: 150px;">ई-मेल - marathiadhya.sarav@gmail.com</span>
                         </p>
                         <div style="text-align: left; font-size: 13px; margin: 2px 0; line-height: 1.4;">
-                            <div style="color: #8B0000;">● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - <span style="margin-left: 140px;">● यु. डायस क्र.-</span></div>
-                            <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.-</span></div>
+                            <div style="color: #8B0000;">● माध्यम - मराठी ● बोर्ड - नाशिक ● संलग्रता क्रमांक - <span style="margin-left: 140px;">● यु. डायस क्र.- 27201700209</span></div>
+                            <div style="color: #000000;">दाखला क्र.- <span style="margin-left: 340px;">जनरल रजि.क्र.- <strong>${student.registrationNo || ''}</strong></span></div>
                         </div>
                     </div>
                     <img src="${baseUrl}images/Karmaveer bhausaheb hiray.jpg" alt="Founder" style="max-height: 90px; max-width: 90px; border-radius: 5px;">
@@ -781,7 +780,7 @@ function generateCertificate(id) {
                 
                 <p style="margin:8px 0;">१४) या शाळेत प्रवेश घेतल्याचा दिनांक - <strong>${formatDate(student.admissionDate)}</strong> <span style="margin-left: 60px;">१५) इयता - <strong>${student.class}</strong></span></p>
                 
-                <p style="margin: 8px 0;">१६) उपस्थितांतील प्रगती - <strong>समाधानकारक</strong> <span style="margin-left: 60px;">१७) वर्गक्रम - <strong>नियमित</strong></span></p>
+                <p style="margin: 8px 0;">१६) अभ्यासात प्रगती - <strong>${student.progressInStudy || ''}</strong> <span style="margin-left: 60px;">१७) वर्तणूक - <strong>${student.behaviour || ''}</strong></span></p>
                 
                 <p style="margin: 8px 0;">१८) शाळा सोडल्याचा दिनांक - <strong>${formatDate(new Date().toISOString().split('T')[0])}</strong></p>
                 
@@ -793,7 +792,7 @@ function generateCertificate(id) {
                 
                 <p style="margin: 20px 0 10px 0; font-size: 12px;">दाखला देण्यात येतो की, वरील माहिती शाळेतील जनरल रजिष्टर नं. १ प्रमाणे आहे.</p>
                 
-                <p style="margin: 5px 0; font-size: 11px;">तारीख -</p>
+                <p style="margin: 5px 0; font-size: 11px;">दाखला देण्याची तारीख - <strong>${formatDate(new Date().toISOString().split('T')[0])}</strong></p>
             </div>
             
             <div class="certificate-footer" style="display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #000; padding-top: 20px;">
@@ -809,7 +808,7 @@ function generateCertificate(id) {
             <p style="font-size: 10px; margin-top: 10px; text-align: center;">टिप :- १) शाळा सोडल्याचे दाखल्यामध्ये अनाधिकृतरित्या बदल केल्यास संबंधितांवर कायदेशिर कारवाई करण्यात येईल.</p>
         </div>
     `;
-    
+
     certificateContent.innerHTML = certificate;
     certificateModal.style.display = 'block';
 }
@@ -821,7 +820,7 @@ function generateBonafide(id) {
         alert('❌ Student not found!');
         return;
     }
-    
+
     const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
     const bonafide = `
         <div class="bonafide-certificate" style="padding: 20px; font-family: 'Noto Sans Devanagari', Arial, sans-serif; max-width: 100%; margin: 0 auto; box-sizing: border-box; min-height: 297mm; position: relative;">
@@ -856,7 +855,7 @@ function generateBonafide(id) {
             
             <div class="bonafide-body" style="font-size: 18px; line-height: 2; margin-top: 40px; padding: 0 20px; position: relative; z-index: 2;">
                 <p style="text-indent: 50px; text-align: justify; margin-bottom: 30px;">
-                    दाखला देण्यात येतो की, <span style="color: red; font-weight: bold;">कु. ${student.studentName} ${student.fatherName} ${student.lastName || ''}</span> हा / ही आमच्या अध्यापक विद्यालय संलग्न सराव पाठशाळेत शिकत असून त्याची / तिची शालेय अभिलेखानुसार माहिती खालील प्रमाणे.
+                    दाखला देण्यात येतो की, <span style="color: red; font-weight: bold;">कु. ${student.studentName}</span> हा / ही आमच्या अध्यापक विद्यालय संलग्न सराव पाठशाळेत शिकत असून त्याची / तिची शालेय अभिलेखानुसार माहिती खालील प्रमाणे.
                 </p>
                 
                 <div style="margin-left: 20px; font-weight: 600;">
@@ -864,7 +863,7 @@ function generateBonafide(id) {
                         <div>र.नं.</div><div>:-</div><div>${student.registrationNo || ''}</div>
                     </div>
                     <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
-                        <div>नाव</div><div>:-</div><div style="color: red;">कु. ${student.studentName} ${student.fatherName} ${student.lastName || ''}</div>
+                        <div>नाव</div><div>:-</div><div style="color: red;">कु. ${student.studentName}</div>
                     </div>
                     <div style="display: grid; grid-template-columns: 150px 30px 1fr; margin-bottom: 15px;">
                         <div>जन्मतारीख</div><div>:-</div><div>${formatDate(student.dob)}</div>
@@ -903,7 +902,7 @@ function generateBonafide(id) {
             </div>
         </div>
     `;
-    
+
     bonafideContent.innerHTML = bonafide;
     bonafideModal.style.display = 'block';
 }
@@ -911,9 +910,9 @@ function generateBonafide(id) {
 // Format date in words (Marathi)
 function formatDateInWords(dateStr) {
     const days = ['', 'एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ', 'दहा',
-                  'अकरा', 'बारा', 'तेरा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'एकोणीस', 'वीस',
-                  'एकवीस', 'बावीस', 'तेवीस', 'चोवीस', 'पंचवीस', 'सव्वीस', 'सत्तावीस', 'अठ्ठावीस', 'एकोणतीस', 'तीस', 'एकतीस'];
-    
+        'अकरा', 'बारा', 'तेरा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'एकोणीस', 'वीस',
+        'एकवीस', 'बावीस', 'तेवीस', 'चोवीस', 'पंचवीस', 'सव्वीस', 'सत्तावीस', 'अठ्ठावीस', 'एकोणतीस', 'तीस', 'एकतीस'];
+
     const ones = ['', 'एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ'];
     const teens = ['दहा', 'अकरा', 'बारा', 'तेरा', 'चौदा', 'पंधरा', 'सोळा', 'सतरा', 'अठरा', 'एकोणीस'];
     const twenties = ['वीस', 'एकवीस', 'बावीस', 'तेवीस', 'चोवीस', 'पंचवीस', 'सव्वीस', 'सत्तावीस', 'अठ्ठावीस', 'एकोणतीस'];
@@ -924,17 +923,17 @@ function formatDateInWords(dateStr) {
     const seventies = ['सत्तर', 'एकाहत्तर', 'बाहत्तर', 'त्र्याहत्तर', 'चौऱ्याहत्तर', 'पंच्याहत्तर', 'शहात्तर', 'सत्याहत्तर', 'अठ्ठ्याहत्तर', 'एकोणऐंशी'];
     const eighties = ['ऐंशी', 'एक्याऐंशी', 'ब्याऐंशी', 'त्र्याऐंशी', 'चौऱ्याऐंशी', 'पंच्याऐंशी', 'शहाऐंशी', 'सत्याऐंशी', 'अठ्ठ्याऐंशी', 'एकोणनव्वद'];
     const nineties = ['नव्वद', 'एक्याण्णव', 'ब्याण्णव', 'त्र्याण्णव', 'चौऱ्याण्णव', 'पंच्याण्णव', 'शहाण्णव', 'सत्याण्णव', 'अठ्ठ्याण्णव', 'नव्व्याण्णव'];
-    
+
     const months = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
-    
+
     const date = new Date(dateStr);
     const day = date.getDate();
     const month = months[date.getMonth()];
     const year = date.getFullYear();
-    
+
     // Get day in words (1-31)
     const dayInWords = days[day];
-    
+
     // Convert year to words
     function numberToWords(num) {
         if (num === 0) return '';
@@ -950,12 +949,12 @@ function formatDateInWords(dateStr) {
         if (num >= 90 && num < 100) return nineties[num - 90];
         return '';
     }
-    
+
     let yearInWords = '';
     const thousands = Math.floor(year / 1000);
     const hundreds = Math.floor((year % 1000) / 100);
     const remainder = year % 100;
-    
+
     if (thousands > 0) {
         yearInWords = numberToWords(thousands) + ' हजार';
     }
@@ -965,7 +964,7 @@ function formatDateInWords(dateStr) {
     if (remainder > 0) {
         yearInWords += (yearInWords ? ' ' : '') + numberToWords(remainder);
     }
-    
+
     return `${dayInWords} ${month} ${yearInWords}`;
 }
 
@@ -975,11 +974,11 @@ function calculateAge(dob) {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
-    
+
     return age;
 }
 
@@ -1027,7 +1026,7 @@ async function printCertificate() {
             backgroundColor: '#FFFBF5',
             logging: false,
             imageTimeout: 5000,
-            onclone: function(clonedDoc) {
+            onclone: function (clonedDoc) {
                 // Ensure the cloned certificate is fully visible
                 const clonedCert = clonedDoc.querySelector('.certificate');
                 if (clonedCert) {
@@ -1045,14 +1044,14 @@ async function printCertificate() {
             format: 'a4'
         });
 
-        const pageWidth  = pdf.internal.pageSize.getWidth();   // 210mm
+        const pageWidth = pdf.internal.pageSize.getWidth();   // 210mm
         const pageHeight = pdf.internal.pageSize.getHeight();  // 297mm
 
         // Scale the captured image to fill the full A4 page width
-        const imgData     = canvas.toDataURL('image/jpeg', 0.95);
-        const imgWidthPx  = canvas.width;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidthPx = canvas.width;
         const imgHeightPx = canvas.height;
-        const ratio       = pageWidth / imgWidthPx;
+        const ratio = pageWidth / imgWidthPx;
         const imgHeightMm = imgHeightPx * ratio;
 
         // If certificate fits on one page, center it; otherwise let it fill
@@ -1100,7 +1099,7 @@ async function printBonafide() {
             backgroundColor: '#ffffff',
             logging: false,
             imageTimeout: 5000,
-            onclone: function(clonedDoc) {
+            onclone: function (clonedDoc) {
                 const clonedCert = clonedDoc.querySelector('.bonafide-certificate');
                 if (clonedCert) {
                     clonedCert.style.overflow = 'visible';
@@ -1116,13 +1115,13 @@ async function printBonafide() {
             format: 'a4'
         });
 
-        const pageWidth  = pdf.internal.pageSize.getWidth();
+        const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
 
-        const imgData     = canvas.toDataURL('image/jpeg', 0.95);
-        const imgWidthPx  = canvas.width;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidthPx = canvas.width;
         const imgHeightPx = canvas.height;
-        const ratio       = pageWidth / imgWidthPx;
+        const ratio = pageWidth / imgWidthPx;
         const imgHeightMm = imgHeightPx * ratio;
 
         const yOffset = imgHeightMm < pageHeight
@@ -1144,7 +1143,7 @@ async function printBonafide() {
 }
 
 // Close modal when clicking outside
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (event.target === certificateModal) {
         closeModal();
     }
@@ -1163,7 +1162,7 @@ function editStudent(id) {
         alert('❌ Student not found!');
         return;
     }
-    
+
     // Populate edit form
     document.getElementById('editStudentId').value = student.id;
     document.getElementById('editRegistrationNo').value = student.registrationNo;
@@ -1192,7 +1191,7 @@ function editStudent(id) {
     document.getElementById('editAddress').value = student.address;
     document.getElementById('editPhone').value = student.phone;
     document.getElementById('editEmail').value = student.email || '';
-    
+
     // Show edit modal
     editModal.style.display = 'block';
 }
@@ -1202,27 +1201,27 @@ function closeEditModal() {
 }
 
 // Handle edit form submission
-editForm.addEventListener('submit', async function(e) {
+editForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData(editForm);
     const studentId = parseInt(document.getElementById('editStudentId').value);
     const registrationNo = formData.get('registrationNo');
-    
+
     // Check if registration number is taken by another student
     const existingStudent = students.find(s => s.registrationNo === registrationNo && s.id !== studentId);
     if (existingStudent) {
         alert('❌ This registration number is already taken by another student!');
         return;
     }
-    
+
     // Find student
     const studentData = students.find(s => s.id === studentId);
     if (!studentData) {
         alert('❌ Student not found!');
         return;
     }
-    
+
     // Update student data
     const updatedStudent = {
         id: studentData.id,
@@ -1254,16 +1253,16 @@ editForm.addEventListener('submit', async function(e) {
         email: formData.get('email'),
         dateAdded: studentData.dateAdded || new Date().toISOString()
     };
-    
+
     // Save to Firebase
     try {
         if (studentData.firebaseKey) {
             const studentRef = ref(database, `students/${studentData.firebaseKey}`);
             await update(studentRef, updatedStudent);
-            
+
             // Show success message
             alert('✅ Student details updated successfully!');
-            
+
             // Close modal and refresh display
             closeEditModal();
             await loadStudents();
@@ -1281,91 +1280,79 @@ loadStudents();
 
 // ==================== AUTHENTICATION FUNCTIONS ====================
 
-// Store the intended tab to navigate to after successful authentication
-let intendedTab = null;
+// Store the intended role to authenticate as
+let intendedRole = null;
 
 // Open authentication modal
-function openAuthModal(tabName) {
-    intendedTab = tabName;
+window.openAuthModal = function(role) {
+    intendedRole = role;
     const modal = document.getElementById('authModal');
     if (modal) {
+        const title = modal.querySelector('h2');
+        if (title) {
+            title.textContent = role === 'admin' ? 'Admin Login' : 'Staff Login';
+        }
         modal.style.display = 'block';
     }
 }
 
 // Close authentication modal
-function closeAuthModal() {
+window.closeAuthModal = function() {
     const modal = document.getElementById('authModal');
     if (modal) {
         modal.style.display = 'none';
     }
-    intendedTab = null;
+    intendedRole = null;
 }
 
 // Sign in with Google
-async function signInWithGoogle() {
+window.signInWithGoogle = async function() {
     const authStatus = document.getElementById('authStatus');
-    
+
     try {
         authStatus.style.display = 'block';
         authStatus.className = '';
         authStatus.textContent = 'Signing in...';
-        
-        // Store intended tab in sessionStorage for redirect flow
-        if (intendedTab) {
-            sessionStorage.setItem('intendedTab', intendedTab);
-        }
+
         // Use popup for all devices (Redirect fails on mobile browsers with strict cross-site storage blocks)
         console.log('Initiating sign in popup...');
         const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            
-            // Check if user email is in admin whitelist
-            if (ADMIN_EMAILS.includes(user.email)) {
-                authStatus.className = 'success';
-                authStatus.textContent = '✅ Authentication successful!';
+        const user = result.user;
+
+        // Check if user email is in whitelist based on intended role
+        const isAuthorized = intendedRole === 'admin' ? ADMIN_EMAILS.includes(user.email) : STAFF_EMAILS.includes(user.email);
+
+        if (isAuthorized) {
+            authStatus.className = 'success';
+            authStatus.textContent = '✅ Authentication successful!';
+
+            setTimeout(() => {
+                closeAuthModal();
                 
-                setTimeout(() => {
-                    closeAuthModal();
-                    if (intendedTab) {
-                        // Now that user is authenticated, directly navigate
-                        const tabName = intendedTab;
-                        intendedTab = null;
-                        
-                        // Hide all tabs
-                        document.querySelectorAll('.tab-content').forEach(tab => {
-                            tab.classList.remove('active');
-                        });
-                        
-                        // Show the intended tab
-                        if (tabName === 'admission') {
-                            const admissionTab = document.getElementById('admission-tab');
-                            if (admissionTab) admissionTab.classList.add('active');
-                        } else if (tabName === 'students') {
-                            const studentsTab = document.getElementById('students-tab');
-                            if (studentsTab) studentsTab.classList.add('active');
-                            displayStudents();
-                        }
-                    }
-                }, 1000);
-            } else {
-                // User is not authorized
-                authStatus.className = 'error';
-                authStatus.textContent = '❌ Access denied. Your email is not authorized to access this system.';
-                
-                // Sign out the user
-                await signOut(auth);
-                
-                setTimeout(() => {
-                    authStatus.style.display = 'none';
-                }, 4000);
-            }
+                // Show dashboard buttons instead of login buttons
+                const loginBtns = document.getElementById('loginButtons');
+                const dashBtns = document.getElementById('dashboardButtons');
+                if (loginBtns) loginBtns.style.display = 'none';
+                if (dashBtns) dashBtns.style.display = 'block';
+            }, 1000);
+        } else {
+            // User is not authorized
+            authStatus.className = 'error';
+            authStatus.textContent = '❌ Access denied. Your email is not authorized to access this system.';
+
+            // Sign out the user
+            await signOut(auth);
+
+            setTimeout(() => {
+                authStatus.style.display = 'none';
+            }, 4000);
+        }
     } catch (error) {
         console.error('Authentication error:', error);
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
         authStatus.className = 'error';
-        
+
         if (error.code === 'auth/popup-closed-by-user') {
             authStatus.textContent = '⚠️ Sign-in cancelled. Please try again.';
         } else if (error.code === 'auth/popup-blocked') {
@@ -1379,7 +1366,7 @@ async function signInWithGoogle() {
         } else {
             authStatus.textContent = `❌ ${error.message || 'Authentication failed. Please try again.'}`;
         }
-        
+
         setTimeout(() => {
             authStatus.style.display = 'none';
         }, 6000);
@@ -1391,7 +1378,7 @@ async function signOutUser() {
     try {
         await signOut(auth);
         alert('✅ Signed out successfully!');
-        
+
         // Navigate back to home tab
         showTab('home');
     } catch (error) {
@@ -1408,7 +1395,7 @@ getRedirectResult(auth)
         if (result && result.user) {
             const user = result.user;
             console.log('User signed in via redirect:', user.email);
-            
+
             // Check if user is authorized
             if (ADMIN_EMAILS.includes(user.email)) {
                 console.log('User authorized!');
@@ -1416,13 +1403,13 @@ getRedirectResult(auth)
                 const savedIntendedTab = sessionStorage.getItem('intendedTab');
                 if (savedIntendedTab) {
                     sessionStorage.removeItem('intendedTab');
-                    
+
                     // Navigate to intended tab
                     setTimeout(() => {
                         document.querySelectorAll('.tab-content').forEach(tab => {
                             tab.classList.remove('active');
                         });
-                        
+
                         if (savedIntendedTab === 'admission') {
                             const admissionTab = document.getElementById('admission-tab');
                             if (admissionTab) admissionTab.classList.add('active');
@@ -1436,13 +1423,13 @@ getRedirectResult(auth)
             } else {
                 // User is not authorized
                 console.log('User not authorized:', user.email);
-                
+
                 // Sign out the unauthorized user
                 signOut(auth).then(() => {
                     // Show modal with error message
                     const authModal = document.getElementById('authModal');
                     const authStatus = document.getElementById('authStatus');
-                    
+
                     if (authModal && authStatus) {
                         authModal.style.display = 'block';
                         authStatus.style.display = 'block';
@@ -1452,13 +1439,13 @@ getRedirectResult(auth)
                             <span style="font-size: 14px;">Your email (${user.email}) is not authorized to access this system.</span><br>
                             <span style="font-size: 13px; margin-top: 5px; display: block;">Please contact the administrator for access.</span>
                         `;
-                        
+
                         // Keep error visible for longer on mobile
                         setTimeout(() => {
                             authStatus.style.display = 'none';
                         }, 8000);
                     }
-                    
+
                     // Also show an alert as backup
                     setTimeout(() => {
                         alert(`❌ Access Denied\n\nYour email (${user.email}) is not authorized to access this system.\n\nPlease contact the administrator for access.`);
@@ -1473,11 +1460,11 @@ getRedirectResult(auth)
         console.error('Redirect result error:', error);
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
-        
+
         // Show modal with error
         const authModal = document.getElementById('authModal');
         const authStatus = document.getElementById('authStatus');
-        
+
         if (error.code === 'auth/unauthorized-domain') {
             if (authModal && authStatus) {
                 authModal.style.display = 'block';
@@ -1505,26 +1492,34 @@ getRedirectResult(auth)
     });
 
 onAuthStateChanged(auth, (user) => {
-    if (user && ADMIN_EMAILS.includes(user.email)) {
+    if (user && (ADMIN_EMAILS.includes(user.email) || STAFF_EMAILS.includes(user.email))) {
         // User is signed in and authorized
         currentUser = user;
-        isAdmin = true;
-        
+        currentUserRole = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'staff';
+
         // Show user info in navigation
         const userAuthDisplay = document.getElementById('userAuthDisplay');
         const displayUserEmail = document.getElementById('displayUserEmail');
-        
+        const userRoleDisplay = document.getElementById('userRoleDisplay');
+
         if (userAuthDisplay && displayUserEmail) {
             displayUserEmail.textContent = user.email;
             displayUserEmail.title = user.email; // Show full email on hover
+            if (userRoleDisplay) userRoleDisplay.textContent = currentUserRole === 'admin' ? 'Admin' : 'Staff';
             userAuthDisplay.style.display = 'flex';
-            
+
             // Add pulse animation on first appearance
             setTimeout(() => {
                 userAuthDisplay.style.animation = 'scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), pulseGlow 2s ease-in-out 0.5s 2';
             }, 100);
+            
+            // If on home tab, swap login buttons for dashboard buttons
+            const loginBtns = document.getElementById('loginButtons');
+            const dashBtns = document.getElementById('dashboardButtons');
+            if (loginBtns) loginBtns.style.display = 'none';
+            if (dashBtns) dashBtns.style.display = 'block';
         }
-        
+
         // Show user info in modal (if open)
         const userInfo = document.getElementById('userInfo');
         const userEmail = document.getElementById('userEmail');
@@ -1532,17 +1527,28 @@ onAuthStateChanged(auth, (user) => {
             userEmail.textContent = user.email;
             userInfo.style.display = 'block';
         }
+        
+        // Re-render students to update action buttons permissions
+        if (typeof students !== 'undefined' && students.length > 0) {
+            displayStudents();
+        }
     } else {
         // User is signed out or not authorized
         currentUser = null;
-        isAdmin = false;
-        
+        currentUserRole = null;
+
         // Hide user info in navigation
         const userAuthDisplay = document.getElementById('userAuthDisplay');
         if (userAuthDisplay) {
             userAuthDisplay.style.display = 'none';
         }
         
+        // Reset home tab buttons
+        const loginBtns = document.getElementById('loginButtons');
+        const dashBtns = document.getElementById('dashboardButtons');
+        if (loginBtns) loginBtns.style.display = 'block';
+        if (dashBtns) dashBtns.style.display = 'none';
+
         // Hide user info in modal
         const userInfo = document.getElementById('userInfo');
         if (userInfo) {
@@ -1553,7 +1559,7 @@ onAuthStateChanged(auth, (user) => {
 
 // ==================== END AUTHENTICATION FUNCTIONS ====================
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', function () {
     // Page elements ready
 });
 
@@ -1586,20 +1592,20 @@ animatedElements.forEach(element => {
 });
 
 // Toast Notification System
-window.showToast = function(message, type = 'success') {
+window.showToast = function (message, type = 'success') {
     let toast = document.getElementById('customToast');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'customToast';
         document.body.appendChild(toast);
     }
-    
+
     toast.className = `custom-toast ${type}`;
     const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
     toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
-    
+
     setTimeout(() => toast.classList.add('show'), 10);
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
