@@ -560,6 +560,7 @@ function exportToCSV() {
 
     // Define CSV headers
     const headers = [
+        'स्टुडंट आय. डी.',
         'रजिस्टर नं.',
         'विद्यार्थ्याचे नाव',
         'जन्मतारीख',
@@ -612,6 +613,7 @@ function exportToCSV() {
 
     sortedStudents.forEach(student => {
         const row = [
+            `"${student.studentPenId || ''}"`,
             `"${student.registrationNo || ''}"`,
             `"${student.studentName || ''}"`,
             `"${student.dob || ''}"`,
@@ -758,7 +760,7 @@ function generateCertificate(id) {
             </div>
             
             <div class="certificate-body" style="font-size: 13px; line-height: 1.8;">
-                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">स्टुडंट आय. डी. - <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
+                <p style="margin: 10px 0; border-bottom: 2px solid #000000; padding-bottom: 5px;">स्टुडंट आय. डी. - <strong>${student.studentPenId || ''}</strong> <span style="margin-left: 150px;">यु.आय.डी.नं. (आधार कार्ड क्रमांक) - <strong>${student.aadharNo}</strong></span></p>
                 
                 <p style="margin: 8px 0;">१) विद्यार्थीचे संपूर्ण नाव - <strong>${student.studentName}</strong> (वडीलांचे नाव) <strong>${student.fatherName}</strong> (आडनाव) <strong>${student.lastName || ''}</strong></p>
                 
@@ -1165,6 +1167,7 @@ function editStudent(id) {
 
     // Populate edit form
     document.getElementById('editStudentId').value = student.id;
+    document.getElementById('editStudentPenId').value = student.studentPenId || '';
     document.getElementById('editRegistrationNo').value = student.registrationNo;
     document.getElementById('editStudentName').value = student.studentName;
     document.getElementById('editFatherName').value = student.fatherName;
