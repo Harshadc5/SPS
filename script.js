@@ -384,7 +384,7 @@ function displayStudents() {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
     updateBulkActionBtn();
-    
+
     // Hide bulk action bar for staff
     const bulkActionBar = document.querySelector('.bulk-action-bar');
     if (bulkActionBar) {
@@ -802,7 +802,7 @@ function generateCertificate(id) {
                 </div>
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
-                    <div style="font-weight: bold;">मुख्याध्यापक</div>
+                    <div style="font-weight: bold;">मुख्याध्यापक/प्राचार्य</div>
                 </div>
             </div>
             <p style="font-size: 10px; margin-top: 10px; text-align: center;">टिप :- १) शाळा सोडल्याचे दाखल्यामध्ये अनाधिकृतरित्या बदल केल्यास संबंधितांवर कायदेशिर कारवाई करण्यात येईल.</p>
@@ -897,7 +897,7 @@ function generateBonafide(id) {
                 </div>
                 <div style="text-align: center;">
                     <div style="margin-bottom: 50px;"></div>
-                    <div style="font-weight: bold; font-size: 18px;">मुख्याध्यापक</div>
+                    <div style="font-weight: bold; font-size: 18px;">मुख्याध्यापक/प्राचार्य</div>
                 </div>
             </div>
         </div>
@@ -1284,7 +1284,7 @@ loadStudents();
 let intendedRole = null;
 
 // Open authentication modal
-window.openAuthModal = function(role) {
+window.openAuthModal = function (role) {
     intendedRole = role;
     const modal = document.getElementById('authModal');
     if (modal) {
@@ -1297,7 +1297,7 @@ window.openAuthModal = function(role) {
 }
 
 // Close authentication modal
-window.closeAuthModal = function() {
+window.closeAuthModal = function () {
     const modal = document.getElementById('authModal');
     if (modal) {
         modal.style.display = 'none';
@@ -1306,7 +1306,7 @@ window.closeAuthModal = function() {
 }
 
 // Sign in with Google
-window.signInWithGoogle = async function() {
+window.signInWithGoogle = async function () {
     const authStatus = document.getElementById('authStatus');
 
     try {
@@ -1328,7 +1328,7 @@ window.signInWithGoogle = async function() {
 
             setTimeout(() => {
                 closeAuthModal();
-                
+
                 // Show dashboard buttons instead of login buttons
                 const loginBtns = document.getElementById('loginButtons');
                 const dashBtns = document.getElementById('dashboardButtons');
@@ -1512,7 +1512,7 @@ onAuthStateChanged(auth, (user) => {
             setTimeout(() => {
                 userAuthDisplay.style.animation = 'scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), pulseGlow 2s ease-in-out 0.5s 2';
             }, 100);
-            
+
             // If on home tab, swap login buttons for dashboard buttons
             const loginBtns = document.getElementById('loginButtons');
             const dashBtns = document.getElementById('dashboardButtons');
@@ -1527,7 +1527,7 @@ onAuthStateChanged(auth, (user) => {
             userEmail.textContent = user.email;
             userInfo.style.display = 'block';
         }
-        
+
         // Re-render students to update action buttons permissions
         if (typeof students !== 'undefined' && students.length > 0) {
             displayStudents();
@@ -1542,7 +1542,7 @@ onAuthStateChanged(auth, (user) => {
         if (userAuthDisplay) {
             userAuthDisplay.style.display = 'none';
         }
-        
+
         // Reset home tab buttons
         const loginBtns = document.getElementById('loginButtons');
         const dashBtns = document.getElementById('dashboardButtons');
