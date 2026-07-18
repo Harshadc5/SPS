@@ -1190,6 +1190,7 @@ function editStudent(id) {
     document.getElementById('editMotherName').value = student.motherName;
     document.getElementById('editDob').value = student.dob;
     document.getElementById('editGender').value = student.gender;
+    document.getElementById('editDakhlaNo').value = student.dakhlaNo || '';
     document.getElementById('editBirthPlace').value = student.birthPlace;
     document.getElementById('editBirthTaluka').value = student.birthTaluka;
     document.getElementById('editBirthDistrict').value = student.birthDistrict;
